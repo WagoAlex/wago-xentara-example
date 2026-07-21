@@ -1,0 +1,49 @@
+# Xentara "tryout" runtime for EtherCAT bring-up.
+#
+# Paste this into Portainer (Stacks -> Add stack -> Web editor -> Deploy), or
+# run `docker compose up -d` on the device. It exchanges the box's network
+# stack directly (network_mode: host) so the EtherCAT master can drive the
+# physical NIC with raw frames - which also means there is no "ports:" mapping;
+# Xentara's Web Service is reached on the host at port 8006.
+#
+# You do NOT set the EtherCAT interface here - you set it in the model's
+# @Skill.CoE.Bus "interface" field (see model/). The container just needs raw
+# access to the host's interfaces, which host networking + NET_RAW provide.
+
+services:
+  xentara:
+    image: xentara/xentara-tryout:latest
+    container_name: xentara-tryout
+    restart: unless-stopped
+
+    network_mode: host
+
+    cap_add:
+      - SYS_NICE      # real-time scheduling priority for the EtherCAT thread
+      - NET_ADMIN     # bring the interface up, set promiscuous mode
+      - NET_RAW       # send/receive raw EtherCAT (Layer-2) frames
+    privileged: true
+
+    ulimits:
+      rtprio: 99
+      rttime: -1
+
+    security_opt:
+      - no-new-privileges:false
+
+    environment:
+      - XENTARA_TRACK=realtime
+      # Pin the real-time thread to a core that EXISTS on your CPU (check with
+      # `nproc`). Isolating that core (isolcpus= on the kernel cmdline) gives
+      # the tightest cycle-time jitter. 3 is just a starting value.
+      - XENTARA_AFFINITY=3
+
+    volumes:
+      - /var/log/xentara:/var/log/xentara
+
+    command: ["/usr/bin/run-xentara.sh"]
+
+# NOTE: this stack has no persistent volume for config / model / licence - only
+# the log dir is mounted. Recreating the container wipes them. Back up
+# ~/.config/xentara inside the container before any change that recreates it,
+# or add bind mounts here once you've settled on a model.

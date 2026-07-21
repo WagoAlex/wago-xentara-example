@@ -1,0 +1,14 @@
+# CMake / build output (build inside the xentara/xentara-build image)
+build/
+build-*/
+*.o
+*.so
+
+# Editor / OS cruft
+.vscode/
+*.swp
+.DS_Store
+
+# Runtime artifacts that shouldn't be committed
+model.json
+*.log

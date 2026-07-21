@@ -1,0 +1,363 @@
+{
+  "$schema": "https://docs.xentara.io/xentara/schema-xentara-model.json",
+  "children": [
+    {
+      "@Skill.CoE.Bus": {
+        "name": "EtherCAT Terminal",
+        "UUID": "ec4f9e63-71ae-49f3-a8ea-cdee22d2e677",
+        "interface": "REPLACE_WITH_YOUR_NIC",
+        "synchronization": {
+          "mode": "free run"
+        },
+        "stateChangeAttempts": 20,
+        "children": [
+          {
+            "@Skill.CoE.Device": {
+              "name": "WAGO 8DI/8DO",
+              "UUID": "0ea70124-f560-4824-b0b3-54f7286fc42c",
+              "position": 1,
+              "slotIndexIncrement": 1,
+              "children": [
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "Out1",
+                    "UUID": "c53097df-bf09-4a71-934a-fa980bbfdc69",
+                    "syncManager": 2,
+                    "bufferAddress": "0x0004.0",
+                    "index": "0x7000",
+                    "subIndex": 1,
+                    "dataType": "BOOLEAN"
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "Out2",
+                    "UUID": "9a7b0d52-eb6e-4731-b8b5-6bf04b42dfd0",
+                    "syncManager": 2,
+                    "bufferAddress": "0x0004.1",
+                    "index": "0x7000",
+                    "subIndex": 2,
+                    "dataType": "BOOLEAN"
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "Out3",
+                    "UUID": "da37f78c-59d8-4546-8066-bb39f0711c00",
+                    "syncManager": 2,
+                    "bufferAddress": "0x0004.2",
+                    "index": "0x7000",
+                    "subIndex": 3,
+                    "dataType": "BOOLEAN"
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "Out4",
+                    "UUID": "0149e383-71a9-46a5-a28c-4dc9a2e5a3db",
+                    "syncManager": 2,
+                    "bufferAddress": "0x0004.3",
+                    "index": "0x7000",
+                    "subIndex": 4,
+                    "dataType": "BOOLEAN"
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "Out5",
+                    "UUID": "14711cf0-e2e7-4a6b-b62f-9b9fa48bf96f",
+                    "syncManager": 2,
+                    "bufferAddress": "0x0004.4",
+                    "index": "0x7000",
+                    "subIndex": 5,
+                    "dataType": "BOOLEAN"
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "Out6",
+                    "UUID": "f41161c4-6ea7-4edb-a596-09c28ed72bec",
+                    "syncManager": 2,
+                    "bufferAddress": "0x0004.5",
+                    "index": "0x7000",
+                    "subIndex": 6,
+                    "dataType": "BOOLEAN"
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "Out7",
+                    "UUID": "48cf013c-407f-4a24-a4c5-37ed28737666",
+                    "syncManager": 2,
+                    "bufferAddress": "0x0004.6",
+                    "index": "0x7000",
+                    "subIndex": 7,
+                    "dataType": "BOOLEAN"
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "Out8",
+                    "UUID": "310ed5c8-d810-4b5d-8a38-ee4ef6156628",
+                    "syncManager": 2,
+                    "bufferAddress": "0x0004.7",
+                    "index": "0x7000",
+                    "subIndex": 8,
+                    "dataType": "BOOLEAN"
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "In1",
+                    "UUID": "cb89a585-ca0f-4e3b-8203-abd687e4705f",
+                    "syncManager": 3,
+                    "bufferAddress": "0x0004.0",
+                    "index": "0x6000",
+                    "subIndex": 1,
+                    "dataType": "BOOLEAN"
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "In2",
+                    "UUID": "0bdf76c9-fe44-4fca-aff8-83fb23fa713c",
+                    "syncManager": 3,
+                    "bufferAddress": "0x0004.1",
+                    "index": "0x6000",
+                    "subIndex": 2,
+                    "dataType": "BOOLEAN"
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "In3",
+                    "UUID": "600ecca4-bcf5-4d43-b48d-1603f47a0a1a",
+                    "syncManager": 3,
+                    "bufferAddress": "0x0004.2",
+                    "index": "0x6000",
+                    "subIndex": 3,
+                    "dataType": "BOOLEAN"
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "In4",
+                    "UUID": "75ae5a13-ab67-47ed-a893-9c32802430d4",
+                    "syncManager": 3,
+                    "bufferAddress": "0x0004.3",
+                    "index": "0x6000",
+                    "subIndex": 4,
+                    "dataType": "BOOLEAN"
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "In5",
+                    "UUID": "87bfed7a-b579-4a63-bd97-b00c5d4e1f8a",
+                    "syncManager": 3,
+                    "bufferAddress": "0x0004.4",
+                    "index": "0x6000",
+                    "subIndex": 5,
+                    "dataType": "BOOLEAN"
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "In6",
+                    "UUID": "4bce9e0f-6c75-4da8-801a-b3ded90d177f",
+                    "syncManager": 3,
+                    "bufferAddress": "0x0004.5",
+                    "index": "0x6000",
+                    "subIndex": 6,
+                    "dataType": "BOOLEAN"
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "In7",
+                    "UUID": "09671fd3-82aa-4cbf-b37d-1e16b182373b",
+                    "syncManager": 3,
+                    "bufferAddress": "0x0004.6",
+                    "index": "0x6000",
+                    "subIndex": 7,
+                    "dataType": "BOOLEAN"
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "name": "In8",
+                    "UUID": "38f1d62e-a97e-458f-84e0-1c906ade5a8f",
+                    "syncManager": 3,
+                    "bufferAddress": "0x0004.7",
+                    "index": "0x6000",
+                    "subIndex": 8,
+                    "dataType": "BOOLEAN"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "@Group": {
+        "name": "WagoIO",
+        "UUID": "7c852f12-59f5-4541-ac52-ef38884a764e",
+        "children": [
+          {
+            "@DataPoint": {
+              "name": "Out1",
+              "UUID": "5c0fc6d2-d9cd-495b-b4fd-41ce68d65a28",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out1"
+            }
+          },
+          {
+            "@DataPoint": {
+              "name": "Out2",
+              "UUID": "5d127082-0e9d-43f2-aa75-1aba1f216b59",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out2"
+            }
+          },
+          {
+            "@DataPoint": {
+              "name": "Out3",
+              "UUID": "c33be139-cbe9-4aa1-b63c-1474ed69b96f",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out3"
+            }
+          },
+          {
+            "@DataPoint": {
+              "name": "Out4",
+              "UUID": "edf8210b-147f-4bd6-89a6-fb373b88c92d",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out4"
+            }
+          },
+          {
+            "@DataPoint": {
+              "name": "Out5",
+              "UUID": "3ff1cf60-2b97-4d0b-a2be-a36241931f52",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out5"
+            }
+          },
+          {
+            "@DataPoint": {
+              "name": "Out6",
+              "UUID": "1ccb0a4c-5142-4359-868c-308954bd1a97",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out6"
+            }
+          },
+          {
+            "@DataPoint": {
+              "name": "Out7",
+              "UUID": "72d2dcbf-7c8f-437d-ab71-0c0031142966",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out7"
+            }
+          },
+          {
+            "@DataPoint": {
+              "name": "Out8",
+              "UUID": "efbebc49-818f-4953-b841-e3be97d04b4d",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out8"
+            }
+          },
+          {
+            "@DataPoint": {
+              "name": "In1",
+              "UUID": "e29ef1ba-1a6a-426f-ac26-ba18d8fae295",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In1"
+            }
+          },
+          {
+            "@DataPoint": {
+              "name": "In2",
+              "UUID": "95b6e631-cae8-404c-913b-75431eb81a00",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In2"
+            }
+          },
+          {
+            "@DataPoint": {
+              "name": "In3",
+              "UUID": "603a4951-40d5-4692-9cac-50ed5cd9bf8a",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In3"
+            }
+          },
+          {
+            "@DataPoint": {
+              "name": "In4",
+              "UUID": "dd5f7193-6d96-4de6-934f-7c09fb0be57f",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In4"
+            }
+          },
+          {
+            "@DataPoint": {
+              "name": "In5",
+              "UUID": "61520f98-69de-42ef-a119-be1793e31eb2",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In5"
+            }
+          },
+          {
+            "@DataPoint": {
+              "name": "In6",
+              "UUID": "175a8f4e-ed3a-401d-8aee-58b4c7f42040",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In6"
+            }
+          },
+          {
+            "@DataPoint": {
+              "name": "In7",
+              "UUID": "43b05cad-fa2d-4686-ae5a-e7938fac316e",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In7"
+            }
+          },
+          {
+            "@DataPoint": {
+              "name": "In8",
+              "UUID": "481d8f12-e7da-4240-89a2-e77c9740631a",
+              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In8"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "@Track": {
+        "name": "EtherCAT Track",
+        "UUID": "62835b96-0e0b-4176-bd99-b2f65e9a11c8",
+        "children": [
+          {
+            "@Timer": {
+              "name": "1ms Timer",
+              "UUID": "46e7653f-1508-4dd1-8895-f1f16f6f2994",
+              "period": "1ms"
+            }
+          },
+          {
+            "@Pipeline": {
+              "name": "Pipeline",
+              "UUID": "490e8761-46da-4812-9ac3-6890a940566c",
+              "triggers": [
+                "EtherCAT Track.1ms Timer.expired"
+              ],
+              "checkpoints": [
+                {},
+                {}
+              ],
+              "segments": [
+                {
+                  "start": 0,
+                  "end": 1,
+                  "tasks": [
+                    {
+                      "function": "EtherCAT Terminal.loop"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

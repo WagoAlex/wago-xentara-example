@@ -1,0 +1,38 @@
+{
+  "$schema": "https://docs.xentara.io/xentara/schema-xentara-model.json",
+  "children": [
+    "#CoE.Bus:EtherCAT Terminal",
+    {
+      "@Track": {
+        "name": "EtherCAT Track",
+        "UUID": "3b024d1f-9345-461b-b822-18a62fffcbb7",
+        "children": [
+          {
+            "@Timer": {
+              "name": "1ms Timer",
+              "UUID": "437d7b2c-fa7b-47f8-9f6b-4c4f5a7c9b1a",
+              "period": "1ms"
+            }
+          },
+          {
+            "@Pipeline": {
+              "name": "Pipeline",
+              "UUID": "bb157730-fdbd-4a29-8096-ddad3e5d96a9",
+              "triggers": [ "EtherCAT Track.1ms Timer.expired" ],
+              "checkpoints": [ {}, {} ],
+              "segments": [
+                {
+                  "start": 0,
+                  "end": 1,
+                  "tasks": [
+                    { "function": "EtherCAT Terminal.loop" }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

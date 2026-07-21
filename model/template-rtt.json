@@ -1,0 +1,68 @@
+{
+  "$schema": "https://docs.xentara.io/xentara/schema-xentara-model.json",
+  "children": [
+    "#CoE.Bus:EtherCAT Terminal",
+    {
+      "@Group": {
+        "name": "RTT",
+        "UUID": "e8d349bb-a3eb-463c-ba7b-f946f1a8b8cd",
+        "children": [
+          { "@Skill.SignalFlow.Register": { "name": "RttLastMs",      "UUID": "dcd274cb-3896-4283-961a-650bdd3a8e3b", "displayName": "Cycle time, last (ms)", "defaultValue": ["float64", 0.0] } },
+          { "@Skill.SignalFlow.Register": { "name": "RttMinMs",       "UUID": "33c48e92-7558-4b6e-bc35-f55482636a25", "displayName": "Cycle time, min (ms)",  "defaultValue": ["float64", 0.0] } },
+          { "@Skill.SignalFlow.Register": { "name": "RttMaxMs",       "UUID": "16c1f695-df8c-45bf-92d6-ad5915f06f40", "displayName": "Cycle time, max (ms)",  "defaultValue": ["float64", 0.0] } },
+          { "@Skill.SignalFlow.Register": { "name": "RttAvgMs",       "UUID": "7a100480-8013-4a76-854a-f687bab2734d", "displayName": "Cycle time, avg (ms)",  "defaultValue": ["float64", 0.0] } },
+          { "@Skill.SignalFlow.Register": { "name": "RttSampleCount", "UUID": "5c49304c-292f-4889-aa1a-200159accbed", "displayName": "Samples",               "defaultValue": ["uint64", 0] } }
+        ]
+      }
+    },
+    {
+      "@Group": {
+        "name": "Control",
+        "UUID": "8b46603a-e7ec-46e7-aa33-8e0b09514cae",
+        "children": [
+          {
+            "@Skill.CPP.Control": {
+              "name": "EtherCATRttProbe",
+              "UUID": "d4e265dd-1d36-4bd1-9351-69335ed34a79",
+              "controlPath": "EtherCATRttProbe.so",
+              "parameters": {
+                "RttLastMs": "RTT.RttLastMs",
+                "RttMinMs": "RTT.RttMinMs",
+                "RttMaxMs": "RTT.RttMaxMs",
+                "RttAvgMs": "RTT.RttAvgMs",
+                "RttSampleCount": "RTT.RttSampleCount"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "@Track": {
+        "name": "EtherCAT Track",
+        "UUID": "e425f9a1-51ea-444e-94cd-d62304cb1d95",
+        "children": [
+          { "@Timer": { "name": "1ms Timer", "UUID": "13d7be96-59e8-4f9a-8cba-00b991a9e646", "period": "1ms" } },
+          {
+            "@Pipeline": {
+              "name": "Pipeline",
+              "UUID": "4ff8e983-91ef-4adb-8b3a-2c49866eccb5",
+              "triggers": [ "EtherCAT Track.1ms Timer.expired" ],
+              "checkpoints": [ {}, {} ],
+              "segments": [
+                {
+                  "start": 0,
+                  "end": 1,
+                  "tasks": [
+                    { "function": "Control.EtherCATRttProbe.step" },
+                    { "function": "EtherCAT Terminal.loop" }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
