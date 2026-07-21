@@ -247,6 +247,7 @@ released - at a steady 1 ms cycle.
 
 ## License
 
-Example code (the C++ probe, models, compose) is provided as-is for evaluation;
-add your own license before redistributing. Xentara itself and the
-`xentara/*` images are licensed separately by Xentara GmbH.
+This example (the C++ probe, models, compose, and docs) is licensed under the
+**Mozilla Public License 2.0** - see [`LICENSE`](./LICENSE). Xentara itself and
+the `xentara/*` container images are licensed separately by Xentara GmbH and
+are not covered by this license.
