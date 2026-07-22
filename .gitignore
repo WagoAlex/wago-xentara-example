@@ -12,3 +12,6 @@ build-*/
 # Runtime artifacts that shouldn't be committed
 model.json
 *.log
+
+# Personal/local reference docs, not part of the published repo
+docs/app-switch-cheatsheet.md
