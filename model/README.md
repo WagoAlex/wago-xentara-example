@@ -25,7 +25,7 @@ Xentara's own hardware-free demo.
 | `template-rtt-kbus.json` | You also want a *verified hardware* round trip (real DO->DI and AO->AI, not just cycle time), and have two loopback wires spare. | Yes - `control/ethercat-kbus-rtt-probe` | No - generator input only |
 | `example-rtt.json` | Reference: `template-rtt.json`'s actual generator output from a real WAGO 750-354 coupler (App 2). Shows what a *finished* file looks like, and imports straight into the Workbench without running anything. | Yes | Yes |
 | `example-rtt-kbus.json` | Reference: `template-rtt-kbus.json`'s actual generator output from the same coupler (App 3), with the `Connection.Do`/`Di`/`Ao`/`Ai` channels already bound to this repo's tested loopback wiring. | Yes | Yes |
-| `example-8di8do.json` | Reference: a complete, hand-written model for one coupler + one 8DI/8DO module, to read and learn from. | No | Yes |
+| `example-8di8do.json` | Reference: a complete, hand-written model for one coupler + one WAGO 750-1506 (8DI/8DO) module, to read and learn from. | No | Yes |
 
 No EtherCAT hardware yet? `../schemas/sample-model.json` is Xentara's own
 demo model - a signal generator feeding synthetic waveforms into a debug
@@ -63,10 +63,29 @@ output is a complete, runnable `model.json`. See `../README.md`, Step C.
 2. **`bufferAddress`** (byte.bit offsets) - these depend on the coupler's own
    control/diagnostic words **and every terminal ahead of a module on the
    row**. Never hand-guess them; the generator reads the real values off the
-   bus. `example-8di8do.json`'s addresses assume a single 8DI/8DO module
-   first on the bus, and `example-rtt.json`/`example-rtt-kbus.json`'s match
-   a specific WAGO 750-354 coupler's exact module row - all three are
+   bus. `example-8di8do.json`'s addresses assume a single WAGO 750-1506
+   module first on the bus, and `example-rtt.json`/`example-rtt-kbus.json`'s
+   match a specific WAGO 750-354 coupler's exact module row - all three are
    correct only for the layout they were made from.
+
+### About the WAGO 750-1506 module in `example-8di8do.json`
+
+The 750-1506 is a combi module: 8 digital inputs and 8 digital outputs in
+one physical unit. Its EtherCAT entry is generic on purpose - WAGO's
+official ESI file doesn't define a `750-1506`-specific module type at all;
+it defines one shared type, `750-5xx / 750-15xx (8b in; 8b out)`
+(`ModuleIdent 0x80000083`, `ModuleClass 750-DO`), covering every part in
+that family with the same 8-in/8-out byte-for-byte process image. That
+entry's PDO layout is exactly what `example-8di8do.json` hand-writes:
+
+- **Outputs** (`RxPdo`, index `0x1600`, sync manager 2): 8 boolean entries
+  at index `0x7000`, subindex 1-8 ("Channel 1, Data 1" ... "Channel 8,
+  Data 1").
+- **Inputs** (`TxPdo`, index `0x1a00`, sync manager 3): 8 boolean entries
+  at index `0x6000`, subindex 1-8, same naming.
+
+Source: WAGO's EtherCAT device description (`WAGO_750-354_25.xml`, Device
+Description EtherCAT, Version 25).
 
 ## Free-run synchronization
 

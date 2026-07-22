@@ -47,7 +47,7 @@ model/
   template-rtt-kbus.json           # generator input only - see warning above (+ verified hardware round trip, App 3)
   example-rtt.json                 # template-rtt.json's real generator output, importable as-is (App 2)
   example-rtt-kbus.json            # template-rtt-kbus.json's real generator output, importable as-is (App 3)
-  example-8di8do.json              # a complete, valid, hand-written model to learn from or import as-is
+  example-8di8do.json              # a complete, hand-written model for one WAGO 750-1506 (8DI/8DO) module
   README.md
 control/
   ethercat-rtt-probe/               # C++ cycle-time probe (App 2)
@@ -270,7 +270,8 @@ Workbench opens a generator-output file correctly? Open
 `template-rtt.json` output from a WAGO 750-354 coupler - directly in the
 Workbench; it's a real model, not a template, and imports without running
 anything. [`model/example-8di8do.json`](model/example-8di8do.json) is a
-second, hand-written reference if you'd rather read one than generate one.
+second, hand-written reference (one coupler + one WAGO 750-1506 module) if
+you'd rather read one than generate one.
 
 ### Step E - Open the TUI and write an output (browser)
 

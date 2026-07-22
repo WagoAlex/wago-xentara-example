@@ -13,7 +13,7 @@
         "children": [
           {
             "@Skill.CoE.Device": {
-              "name": "WAGO 8DI/8DO",
+              "name": "WAGO 750-1506",
               "UUID": "0ea70124-f560-4824-b0b3-54f7286fc42c",
               "position": 1,
               "slotIndexIncrement": 1,
@@ -209,112 +209,112 @@
             "@DataPoint": {
               "name": "Out1",
               "UUID": "5c0fc6d2-d9cd-495b-b4fd-41ce68d65a28",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out1"
+              "io": "EtherCAT Terminal.WAGO 750-1506.Out1"
             }
           },
           {
             "@DataPoint": {
               "name": "Out2",
               "UUID": "5d127082-0e9d-43f2-aa75-1aba1f216b59",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out2"
+              "io": "EtherCAT Terminal.WAGO 750-1506.Out2"
             }
           },
           {
             "@DataPoint": {
               "name": "Out3",
               "UUID": "c33be139-cbe9-4aa1-b63c-1474ed69b96f",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out3"
+              "io": "EtherCAT Terminal.WAGO 750-1506.Out3"
             }
           },
           {
             "@DataPoint": {
               "name": "Out4",
               "UUID": "edf8210b-147f-4bd6-89a6-fb373b88c92d",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out4"
+              "io": "EtherCAT Terminal.WAGO 750-1506.Out4"
             }
           },
           {
             "@DataPoint": {
               "name": "Out5",
               "UUID": "3ff1cf60-2b97-4d0b-a2be-a36241931f52",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out5"
+              "io": "EtherCAT Terminal.WAGO 750-1506.Out5"
             }
           },
           {
             "@DataPoint": {
               "name": "Out6",
               "UUID": "1ccb0a4c-5142-4359-868c-308954bd1a97",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out6"
+              "io": "EtherCAT Terminal.WAGO 750-1506.Out6"
             }
           },
           {
             "@DataPoint": {
               "name": "Out7",
               "UUID": "72d2dcbf-7c8f-437d-ab71-0c0031142966",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out7"
+              "io": "EtherCAT Terminal.WAGO 750-1506.Out7"
             }
           },
           {
             "@DataPoint": {
               "name": "Out8",
               "UUID": "efbebc49-818f-4953-b841-e3be97d04b4d",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.Out8"
+              "io": "EtherCAT Terminal.WAGO 750-1506.Out8"
             }
           },
           {
             "@DataPoint": {
               "name": "In1",
               "UUID": "e29ef1ba-1a6a-426f-ac26-ba18d8fae295",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In1"
+              "io": "EtherCAT Terminal.WAGO 750-1506.In1"
             }
           },
           {
             "@DataPoint": {
               "name": "In2",
               "UUID": "95b6e631-cae8-404c-913b-75431eb81a00",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In2"
+              "io": "EtherCAT Terminal.WAGO 750-1506.In2"
             }
           },
           {
             "@DataPoint": {
               "name": "In3",
               "UUID": "603a4951-40d5-4692-9cac-50ed5cd9bf8a",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In3"
+              "io": "EtherCAT Terminal.WAGO 750-1506.In3"
             }
           },
           {
             "@DataPoint": {
               "name": "In4",
               "UUID": "dd5f7193-6d96-4de6-934f-7c09fb0be57f",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In4"
+              "io": "EtherCAT Terminal.WAGO 750-1506.In4"
             }
           },
           {
             "@DataPoint": {
               "name": "In5",
               "UUID": "61520f98-69de-42ef-a119-be1793e31eb2",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In5"
+              "io": "EtherCAT Terminal.WAGO 750-1506.In5"
             }
           },
           {
             "@DataPoint": {
               "name": "In6",
               "UUID": "175a8f4e-ed3a-401d-8aee-58b4c7f42040",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In6"
+              "io": "EtherCAT Terminal.WAGO 750-1506.In6"
             }
           },
           {
             "@DataPoint": {
               "name": "In7",
               "UUID": "43b05cad-fa2d-4686-ae5a-e7938fac316e",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In7"
+              "io": "EtherCAT Terminal.WAGO 750-1506.In7"
             }
           },
           {
             "@DataPoint": {
               "name": "In8",
               "UUID": "481d8f12-e7da-4240-89a2-e77c9740631a",
-              "io": "EtherCAT Terminal.WAGO 8DI/8DO.In8"
+              "io": "EtherCAT Terminal.WAGO 750-1506.In8"
             }
           }
         ]
