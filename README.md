@@ -5,16 +5,16 @@ on a WAGO edge device against a real EtherCAT bus - from **downloading the
 runtime** to **writing a physical output from the built-in TUI** - doing almost
 everything in a **web browser**, with only a couple of typed commands.
 
-No prior Xentara knowledge assumed. Bring a WAGO EtherCAT coupler (any model)
-with at least one digital I/O terminal, and an edge computer (or WAGO edge
-controller) running Docker.
+You don't need any prior Xentara knowledge. Bring a WAGO EtherCAT coupler (any
+model) with at least one digital I/O terminal, and an edge computer (or WAGO
+edge controller) running Docker.
 
 ## What you'll end up with
 
 - The Xentara runtime running in a container, licensed.
-- Your **actual** EtherCAT I/O modules discovered automatically - digital,
-  analog, in whatever mix and order they're physically wired - no address
-  guessing.
+- Your actual EtherCAT I/O modules discovered automatically, in whatever mix
+  of digital and analog terminals and whatever order they're physically
+  wired, without you having to guess addresses.
 - The TUI open, showing live input values, and you toggling an output that
   switches real hardware.
 - (Optional) a live cycle-time readout via a small C++ probe.
@@ -90,7 +90,9 @@ see the comments in the compose file.
 
 ## Step 3 - License it (browser + one command)
 
-Xentara is licensed per **node ID**.
+Xentara is licensed per **node ID**. This is a condensed version of the
+licensing steps in the [Xentara on Docker: Quick Start](https://kb.xentara.io/articles/xentara-on-docker-quick-start-guide)
+guide (see [References](#references)) - follow that guide directly if anything here doesn't match your version.
 
 1. In Portainer: **Containers -> xentara-tryout -> Console -> Connect**
    (`/bin/bash`). This is a terminal in your browser.
@@ -100,8 +102,8 @@ Xentara is licensed per **node ID**.
    ```
    Copy the long ID it prints.
 3. Go to the **Xentara Customer Portal** (`https://customerportal.xentara.io`,
-   or the trial link the runtime prints on first start), sign in, and activate
-   that node ID against your licence (or start a trial).
+   or the trial link the runtime prints on first start). Sign in and activate
+   that node ID against your licence, or start a trial.
 4. In Portainer, **Restart** the container.
 5. Check **Logs** for `Model uses N of … data points from the Xentara licence`
    - that means licensing is working. (You'll also set a TUI password on first
@@ -111,8 +113,8 @@ Xentara is licensed per **node ID**.
 
 ## Step 4 - Discover your I/O modules (one command)
 
-This is the part that makes the config **generic**: Xentara scans the live bus
-and writes the correct model for whatever terminals are actually present.
+Xentara scans the live EtherCAT bus and writes the correct model for whatever
+terminals are actually present (tested against a WAGO 750-354 coupler).
 
 The scan needs the EtherCAT NIC exclusively, so Xentara is stopped for it and
 the scan runs in a throwaway container. First copy
@@ -120,7 +122,7 @@ the scan runs in a throwaway container. First copy
 (e.g. to `~/model/`). Then - **command 2 of 2**:
 
 ```bash
-docker stop xentara-tryout                     # free the NIC
+docker stop xentara-tryout                     
 
 docker run --rm --network host --privileged \
   --cap-add NET_RAW --cap-add NET_ADMIN --cap-add SYS_NICE \
@@ -131,7 +133,7 @@ docker run --rm --network host --privileged \
      -i template-minimal.json -o model.json \
      -b <your-nic> -m online -n "EtherCAT Terminal" -v'
 
-docker start xentara-tryout                    # runtime back up
+docker start xentara-tryout                    
 ```
 
 - `<your-nic>` is the EtherCAT interface from step 1.
@@ -160,7 +162,7 @@ Put the generated `model.json` where Xentara reads it
 (`~/.config/xentara/model.json` inside the container) and restart:
 
 - **No CLI:** use the **Xentara Workbench** (desktop GUI). Connect it to the
-  device (`<device-ip>`, port `8006`, user `xentara`, your password), import the
+  device (`<device-ip>`, port `8080`, user `xentara`, your password), import the
   discovered bus, set free run, and **Deploy**.
 - **Minimal CLI:** copy the file in and restart the container in Portainer:
   ```bash
@@ -181,10 +183,12 @@ Check the container **Logs** for `Using model file …` and no errors.
 From Portainer: **Containers -> xentara-tryout -> Console -> Connect**, then:
 
 ```bash
-xentara-tui --host localhost --port 8006 --user xentara
+xentara-tui --host localhost --port 8080 --user xentara
 ```
 
-(Port **8006**.) Navigate the model tree with the arrow keys, Enter to descend.
+(Port **8080**.) Navigate the model tree with the arrow keys, Enter to descend.
+The [Xentara on Docker: Quick Start](https://kb.xentara.io/articles/xentara-on-docker-quick-start-guide)
+guide covers the same TUI walkthrough if you want the vendor's version.
 
 - **Read inputs:** open the discovered bus (or the `WagoIO` datapoint group if
   you added one) and watch input channels update live as you toggle physical
@@ -199,7 +203,7 @@ xentara-tui --host localhost --port 8006 --user xentara
 
 ### The TUI isn't magic - it's a Web Service client
 
-Editing a value is a single RPC over Xentara's WebSocket (port 8006, CBOR,
+Editing a value is a single RPC over Xentara's WebSocket (port 8080, CBOR,
 subprotocol `xentara-v1`): **write the value attribute (id `11`) with opcode
 `5`**. Any HMI or script can drive I/O the same way; `xentara-tui` itself is a
 self-contained reference client. Full protocol: the
@@ -212,6 +216,7 @@ self-contained reference client. Full protocol: the
 1. `xentara-licence-id` - get the node ID to activate.
 2. `xentara-ethercat-model-file-generator … -b <your-nic> -m online` - discover
    your modules.
+3. `xentara-tui --host localhost --port 8080 --user xentara` - open the TUI.
 
 Plus `xentara-password` once, and a couple of `docker cp` / restart clicks.
 Everything else is WBM, Portainer, and the TUI/Workbench in a browser.
@@ -222,7 +227,7 @@ Everything else is WBM, Portainer, and the TUI/Workbench in a browser.
 |---|---|
 | Licence error in logs | Activate the node ID at customerportal.xentara.io, then restart. |
 | TUI 401 after setting the password | Restart the container - the password is read only at startup. |
-| TUI SSL error on 8080 | Use port **8006**. |
+| TUI SSL error on 8080 | Try port **8006** instead. |
 | Discovery: "can't open interface" | Another Xentara instance owns the NIC - stop it first. |
 | Discovery: "connected devices less than configured" | Coupler state machine out of sync; run `xentara-ethercat-device-info --interface <your-nic>` once, then retry. |
 | A control's `step()` never runs, no error | `controlPath` had a `control/` prefix - use the bare filename. |
@@ -232,11 +237,11 @@ Everything else is WBM, Portainer, and the TUI/Workbench in a browser.
 
 ## Validated
 
-This flow was run end to end on real hardware: discovery correctly enumerated a
-mixed row (analog + 8-channel + 16-channel digital I/O behind one coupler), the
-runtime reached operational, inputs read live, and a digital output was written
-from the Web Service (the TUI's own write path) - confirmed switching and then
-released - at a steady 1 ms cycle.
+This flow was run end to end on real hardware. Discovery correctly enumerated
+a mixed row behind one coupler (analog, 8-channel digital, and 16-channel
+digital I/O), and the runtime reached operational with inputs reading live. A
+digital output was written from the Web Service, the same write path the TUI
+uses, and it switched and released as expected, holding a steady 1 ms cycle.
 
 ## References
 
