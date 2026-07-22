@@ -43,6 +43,7 @@ model/
   example-8di8do.json              # a complete hand-written model to learn from
   README.md
 control/ethercat-rtt-probe/        # optional C++ cycle-time probe
+control/ethercat-kbus-rtt-probe/   # optional: cycle-time + verified DO->DI hardware round trip
 ```
 
 ---
@@ -210,6 +211,56 @@ self-contained reference client. Full protocol: the
 [Xentara WebSocket API Specification](https://docs.xentara.io/xentara-websocket-api/).
 
 ---
+
+## Optional: a verified hardware round trip (K-Bus)
+
+`RTT.RttLastMs`/`MinMs`/`MaxMs`/`AvgMs` (from `EtherCATRttProbe`, above) measure
+the step()-to-step() interval, i.e. how close the achieved cycle is to the
+configured Timer period. That is a software/scheduling number, not a
+hardware one: it says nothing about how long a physical output actually
+takes to reach a physical input.
+
+`control/ethercat-kbus-rtt-probe/` adds that missing measurement. It keeps
+every `RTT.*` register from `EtherCATRttProbe` unchanged, and adds:
+
+- `RTT.KbusConnected` - **false** until a write to `Do` has actually been
+  observed on `Di`. This is a real connectivity check, not an assumption: if
+  `Do` and `Di` are not physically wired together, this latches `false`
+  forever and the `KbusCycle*` registers stay at zero, so a missing or wrong
+  wire reads as "not connected," never as a plausible-looking wrong number.
+- `RTT.KbusCycleLastMs` / `MinMs` / `MaxMs` / `AvgMs` / `KbusSampleCount` -
+  once connected, the measured round trip: write `Do`, flip it once `Di`
+  reads back the written value.
+
+This requires one physical loopback wire (an output looped back into an
+input on the same coupler) and two extra parameter bindings in the model:
+
+```json
+"parameters": {
+  "Do": "WagoIO.DO_8ch_8",
+  "Di": "WagoIO.DI_8ch_1",
+  "KbusConnected": "RTT.KbusConnected",
+  "KbusCycleLastMs": "RTT.KbusCycleLastMs",
+  "KbusCycleMinMs": "RTT.KbusCycleMinMs",
+  "KbusCycleMaxMs": "RTT.KbusCycleMaxMs",
+  "KbusCycleAvgMs": "RTT.KbusCycleAvgMs",
+  "KbusSampleCount": "RTT.KbusSampleCount"
+}
+```
+
+(plus the same `RttLastMs`/`RttMinMs`/`RttMaxMs`/`RttAvgMs`/`RttSampleCount`
+bindings `EtherCATRttProbe` already uses.) Because it requires that specific
+wiring, this is a separate control from `EtherCATRttProbe` rather than a
+change to it - `EtherCATRttProbe` stays generic and I/O-free for any
+deployment that doesn't have a loopback available.
+
+Measured on real hardware (750-354 coupler, ~50 channels across 2 AO/8DO/
+16DO/8DI/16DI modules), the K-Bus round trip lands around 6-8 ms and does
+not improve by shortening the EtherCAT Timer period below that: the K-Bus
+scan cycle, not EtherCAT frame rate or wire propagation, is what sets the
+floor. Testing the same loopback pattern on both the first and the last
+channel of the 16DO/16DI modules showed only a small (~0.2 ms) difference
+between scan positions, well inside that same 6-8 ms floor.
 
 ## The only commands you type
 
