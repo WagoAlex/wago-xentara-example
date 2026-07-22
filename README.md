@@ -11,15 +11,19 @@ third runs with no hardware at all.
 
 ## Choose your app
 
-These three aren't independent choices - each one builds directly on the
-one before it. App 3 *is* App 2 plus wiring; App 2 *is* App 1 plus a real
-EtherCAT bus. Every app shares the same first three steps (clone, deploy,
-license); climb the ladder as far as your hardware allows.
+These three aren't independent choices, but they're also not all nested in
+each other. App 3 genuinely *is* App 2 plus wiring - same RTT registers,
+same control philosophy, with the K-Bus round trip added on top. App 1,
+though, is a separate model entirely (Xentara's own signal generator demo,
+no EtherCAT skill at all) - App 2 doesn't contain it or extend it, it's just
+the recommended first stop to prove the runtime and licence work before you
+involve real hardware. Every app shares the same first three steps (clone,
+deploy, license); climb from there as far as your hardware allows.
 
 | | Model file | EtherCAT hardware | Loopback wiring | Licence skills needed | What you get |
 |---|---|---|---|---|---|
 | **App 1** - [Xentara demo](#app-1---xentara-demo-no-hardware) | [`schemas/sample-model.json`](schemas/sample-model.json) | Not needed | Not needed | Base runtime only | Synthetic waveforms (pulse, sine, ramp, noise) piped into a live debug inspector - confirms the runtime and licence work before you touch any wiring. |
-| **App 2** - [WAGO RTT](#app-2---wago-rtt-ethercat--cycle-time) | [`model/template-rtt.json`](model/template-rtt.json) | Required (coupler on the wire) | Not needed | `CoE` (EtherCAT) + `CPP` (C++ control) | Everything in App 1, plus your real I/O discovered and editable in the TUI, plus a live software cycle-time readout. |
+| **App 2** - [WAGO RTT](#app-2---wago-rtt-ethercat--cycle-time) | [`model/template-rtt.json`](model/template-rtt.json) | Required (coupler on the wire) | Not needed | `CoE` (EtherCAT) + `CPP` (C++ control) | Your real I/O discovered and editable in the TUI, plus a live software cycle-time readout. A separate model from App 1, not an extension of it. |
 | **App 3** - [WAGO RTT + K-Bus](#app-3---wago-rtt--k-bus-verified-hardware-round-trip) | [`model/template-rtt-kbus.json`](model/template-rtt-kbus.json) | Required (same as App 2) | Required (2 loopback wires) | Same as App 2 - no extra skill | Everything in App 2, plus a *verified hardware* round trip: a real digital and analog signal sent out and read back, timed for real. |
 
 `CoE` and `CPP` are the licence skill names as they appear in your
