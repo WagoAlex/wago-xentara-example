@@ -58,6 +58,11 @@ cd wago-xentara-example
 
 Everything referenced below is a relative path from here.
 
+> [!NOTE]
+> Used GitHub's **Code -> Download ZIP** button instead of `git clone`? The
+> extracted folder is named `wago-xentara-example-main`, not
+> `wago-xentara-example` - `cd` into whatever name you actually got.
+
 ### Step 1 - Download + deploy the runtime (browser)
 
 The runtime ships as a container image (`xentara/xentara-tryout`). Deploy it
@@ -213,6 +218,14 @@ docker start xentara-tryout
 the physical row changes. That's exactly why you discover instead of
 hand-writing addresses.
 
+> [!WARNING]
+> Don't open `template-rtt.json` / `template-rtt-kbus.json` / `template-minimal.json`
+> directly in the Xentara Workbench or copy them straight to the device as
+> `model.json` - the `#CoE.Bus:...` marker string is only meaningful to the
+> generator; it's not valid Xentara model syntax and will fail to import
+> ("expected a JSON object" at that line). Always run the generator first;
+> its **output** file is the one you load, import, or deploy.
+
 > [!IMPORTANT]
 > The generator doesn't set the bus synchronization mode; set it to **free
 > run** (the Xentara Workbench has a dropdown, or add `"synchronization":
@@ -221,11 +234,12 @@ hand-writing addresses.
 
 ### Step D - Load the model
 
-Put the generated `model.json` where Xentara reads it and restart:
+Put the **generated** `model.json` from Step C (not the template) where
+Xentara reads it, and restart:
 
 - **Xentara Workbench** (desktop GUI): connect it to the device
-  (`<device-ip>`, port `8080`, user `xentara`, your password), import the
-  discovered bus, set free run, and **Deploy**.
+  (`<device-ip>`, port `8080`, user `xentara`, your password), open the
+  generated `model.json`, confirm the bus is set to free run, and **Deploy**.
 - **Or copy the file in directly:**
   ```bash
   docker cp ~/model/model.json \

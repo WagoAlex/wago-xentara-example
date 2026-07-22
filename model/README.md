@@ -19,7 +19,8 @@ to run it.
 
 ## The templates are for the discovery tool
 
-`template-minimal.json` and `template-rtt.json` both contain the marker string:
+`template-minimal.json`, `template-rtt.json`, and `template-rtt-kbus.json`
+all contain the marker string:
 
 ```json
 "#CoE.Bus:EtherCAT Terminal"
@@ -27,8 +28,14 @@ to run it.
 
 The `xentara-ethercat-model-file-generator` **replaces that marker** with the
 `@Skill.CoE.Bus` it discovers from your live bus, and keeps the rest of the
-template (the track, and for the RTT one the probe control) intact - so the
-output is a complete, runnable `model.json`. See `../README.md`, step 4.
+template (the track, and for the RTT ones the probe control) intact - so the
+output is a complete, runnable `model.json`. See `../README.md`, Step C.
+
+> [!WARNING]
+> The marker string isn't valid Xentara model syntax - it only means
+> something to the generator. Don't open a template file directly in the
+> Xentara Workbench or copy it straight in as `model.json`; it will fail to
+> import. Run the generator first and use its output file instead.
 
 ## Two things you always set for your hardware
 
