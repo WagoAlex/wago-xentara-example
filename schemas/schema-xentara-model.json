@@ -1,0 +1,1211 @@
+{
+  "$id": "https://docs.xentara.io/xentara/schema-xentara-model.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "nameType": {
+      "title": "Name",
+      "description": "The name used to construct the primary key of the element",
+      "type": "string",
+      "pattern": "^([^\\[\\.][^\\.]*|\\[[^\\]]*\\])$"
+    },
+    "uuidType": {
+      "title": "UUID",
+      "description": "The unique UUID of the element",
+      "type": "string",
+      "format": "uuid"
+    },
+    "aclType": {
+      "title": "ACL",
+      "description": "The access control list of the element",
+      "type": "object",
+      "properties": {
+        "entries": {
+          "title": "ACL Entries",
+          "description": "The entries in the access control list",
+          "type": "array",
+          "items": {
+            "title": "ACL Entry",
+            "description": "An entry in an access control list",
+            "type": "object",
+            "properties": {
+              "role": {
+                "title": "Role",
+                "description": "The role this entry applies to",
+                "type": "string",
+                "minLength": 1
+              },
+              "allow": {
+                "title": "Allow List",
+                "description": "The list of entitlements to allow for this role",
+                "type": "array",
+                "items": {
+                  "title": "Allowed Entitlement",
+                  "description": "An entitlement to allow for this role",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "deny": {
+                "title": "Deny List",
+                "description": "The list of entitlements to deny for this role",
+                "type": "array",
+                "items": {
+                  "title": "Denied Entitlement",
+                  "description": "An entitlement to deny for this role",
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "role"
+            ],
+            "unevaluatedProperties": false
+          }
+        },
+        "inherit": {
+          "title": "Inherit Parent ACL",
+          "description": "Whether the ACL entries of the parent element should be inherited",
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "keyType": {
+      "type": "string",
+      "pattern": "^([^\\[\\.][^\\.]*|\\[[^\\]]*\\])(\\.[^\\[\\.][^\\.]*|\\[[^\\]]*\\])*$"
+    },
+    "timeIntervalType": {
+      "type": "string",
+      "pattern": "^(0|-?\\d+(\\.\\d+)?(ns|µs|us|ms|s|m|h))$"
+    },
+    "nonNegativeTimeIntervalType": {
+      "type": "string",
+      "pattern": "^(0|\\d+(\\.\\d+)?(ns|µs|us|ms|s|m|h))$"
+    },
+    "positiveTimeIntervalType": {
+      "type": "string",
+      "pattern": "^\\d+(\\.\\d+)?(ns|µs|us|ms|s|m|h)$"
+    },
+    "@Group": {
+      "$defs": {
+        "items": {
+          "oneOf": [
+            {
+              "$ref": "#/$defs/@Group"
+            },
+            {
+              "$ref": "#/$defs/@DataPoint"
+            },
+            {
+              "$ref": "#/$defs/@Timer"
+            },
+            {
+              "$ref": "#/$defs/@Track"
+            },
+            {
+              "$ref": "#/$defs/@Skill"
+            },
+            {
+              "$ref": "#/$defs/@Skill.SignalProcessing.ConvertedValue"
+            },
+            {
+              "$ref": "#/$defs/@Skill.SignalProcessing.Bit"
+            },
+            {
+              "$ref": "#/$defs/@Skill.SignalProcessing.SummaryState"
+            },
+            {
+              "$ref": "#/$defs/@Skill.SignalFlow.Register"
+            },
+            {
+              "$ref": "#/$defs/@Skill.SignalFlow.EdgeDetection"
+            },
+            {
+              "$ref": "#/$defs/@Skill.SignalFlow.Bridge"
+            },
+            {
+              "$ref": "#/$defs/@Skill.SignalGenerator.Sampler"
+            },
+            {
+              "$ref": "#/$defs/@Skill.Debugging.Inspector"
+            },
+            {
+              "$ref": "#/$defs/@Skill.Debugging.Logger"
+            }
+          ]
+        }
+      },
+      "title": "Group",
+      "description": "A group used to organize components",
+      "type": "object",
+      "properties": {
+        "@Group": {
+          "title": "Group Properties",
+          "description": "The properties of the group",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "children": {
+              "title": "Children",
+              "description": "The child components",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/@Group/$defs/items"
+              }
+            }
+          },
+          "required": [
+            "name",
+            "UUID"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "@DataPoint": {
+      "title": "Data Point",
+      "description": "A data point",
+      "type": "object",
+      "properties": {
+        "@DataPoint": {
+          "title": "Data Point Properties",
+          "description": "The properties of the data point",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "units": {
+              "title": "Physical Units",
+              "description": "The physical units of the data point’s value, like \"kg\" or \"°C\". Can be empty or omitted if the data point’s value has no units.",
+              "type": "string"
+            },
+            "displayName": {
+              "title": "Display Name",
+              "description": "A simple, user readable name for the data point. Can be omitted to use the primary key.",
+              "type": "string"
+            },
+            "io": {
+              "title": "Attached input and output",
+              "description": "The skill data point or skill data points the data point’s input and/or output are attached to.",
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/keyType"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "input": {
+                      "title": "Input",
+                      "description": "The skill data point point that the data point’s value is read from.",
+                      "$ref": "#/$defs/keyType"
+                    },
+                    "output": {
+                      "title": "Output",
+                      "description": "The skill data point that the data point’s value is written to.",
+                      "$ref": "#/$defs/keyType"
+                    }
+                  },
+                  "minProperties ": 1,
+                  "unevaluatedProperties": false
+                }
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "UUID",
+            "io"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "@Timer": {
+      "title": "Timer",
+      "description": "A timer",
+      "type": "object",
+      "properties": {
+        "@Timer": {
+          "title": "Timer Properties",
+          "description": "The properties of the timer",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "period": {
+              "title": "Period",
+              "description": "The period of the timer",
+              "$ref": "#/$defs/positiveTimeIntervalType",
+              "minimum": 1,
+              "default": "1s"
+            },
+            "offset": {
+              "title": "Offset",
+              "description": "The offset of the timer",
+              "$ref": "#/$defs/timeIntervalType",
+              "default": "0"
+            },
+            "sequence": {
+              "title": "Sequence",
+              "description": "The sequence number of the timer",
+              "type": "integer",
+              "default": 0
+            }
+          },
+          "required": [
+            "name",
+            "UUID",
+            "period"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "@Track": {
+      "title": "Execution Track",
+      "description": "An execution track containing pipelines",
+      "type": "object",
+      "properties": {
+        "@Track": {
+          "title": "Execution Track Properties",
+          "description": "The properties of the execution track",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "threadCount": {
+              "title": "Thread Count",
+              "description": "The number of threads in the thread pool used to execute tasks",
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "timing": {
+              "title": "Timing",
+              "description": "The type of timing to use for the threads in the thread pool",
+              "type": "string",
+              "enum": [ "relaxed", "precise", "realtime" ],
+              "default": "precise"
+            },
+            "cpus": {
+              "title": "CPUs",
+              "description": "The CPUs to run the tasks on. This is used to set the thread affinity of the threads in the thread pool",
+              "type": "array",
+              "minItems":  1,
+              "items": {
+                "title": "CPU",
+                "description": "A single CPUs to run the tasks on",
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "children": {
+              "title": "Children",
+              "description": "The child elements",
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "$ref": "#/$defs/@Pipeline"
+                  },
+                  {
+                    "$ref": "#/$defs/@Timer"
+                  }
+                ]
+              }
+            }
+          },
+          "required": [
+            "name",
+            "UUID"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "@Pipeline": {
+      "title": "Pipeline",
+      "description": "An pipeline witin an execution track",
+      "type": "object",
+      "properties": {
+        "@Pipeline": {
+          "title": "Pipeline Properties",
+          "description": "The properties of the pipeline",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "triggers": {
+              "title": "Triggers",
+              "description": "The list of triggers that should trigger the pipeline execution",
+              "type": "array",
+              "minSize": 2,
+              "items": {
+                "title": "Checkpoint",
+                "description": "The primary key of an event that should trigger the pipeline",
+                "$ref": "#/$defs/keyType"
+              }
+            },
+            "checkpoints": {
+              "title": "Checkpoints",
+              "description": "The list of checkpoints",
+              "type": "array",
+              "minSize": 2,
+              "items": {
+                "title": "Checkpoint",
+                "description": "Empty object that represents a checkpoint",
+                "type": "object",
+                "properties": {},
+                "unevaluatedProperties": false
+              }
+            },
+            "segments": {
+              "title": "Segments",
+              "description": "The list of segments",
+              "type": "array",
+              "minSize": 1,
+              "items": {
+                "title": "Segment",
+                "description": "A segment extending between two check points",
+                "type": "object",
+                "properties": {
+                  "start": {
+                    "title": "Start Check Point",
+                    "description": "The 0-based index of the starting check point",
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "end": {
+                    "title": "End Check Point",
+                    "description": "The 0-based index of the end check point",
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "tasks": {
+                    "title": "Tasks",
+                    "description": "A single task to execute",
+                    "type": "array",
+                    "items": {
+                      "title": "Task",
+                      "type": "object",
+                      "properties": {
+                        "function": {
+                          "title": "Function",
+                          "description": "The primary key of the actual task to execute",
+                          "$ref": "#/$defs/keyType"
+                        }
+                      },
+                      "required": [
+                        "function"
+                      ],
+                      "unevaluatedProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "start",
+                  "end"
+                ],
+                "unevaluatedProperties": false
+              }
+            }
+          },
+          "required": [
+            "name",
+            "UUID",
+            "checkpoints"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "@Skill": {
+      "title": "Skill Element",
+      "description": "An element provided by a Xentara skill",
+      "type": "object",
+      "patternProperties": {
+        "^@Skill\\.(?!SignalProcessing\\.|SignalFlow\\.|SignalGenerator\\.|Debugging\\.)[A-Za-z0-9]+\\.[A-Za-z0-9]+$": {
+          "title": "Element Properties",
+          "description": "The properties of the element",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "children": {
+              "title": "Children",
+              "description": "The child elements",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/@Skill"
+              }
+            }
+          },
+          "required": [
+            "name",
+            "UUID"
+          ]
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "@Skill.SignalProcessing.ConvertedValue": {
+      "title": "Converted Value",
+      "description": "A value converted from another skill data point",
+      "type": "object",
+      "properties": {
+        "@Skill.SignalProcessing.ConvertedValue": {
+          "title": "Converted Value Properties",
+          "description": "The properties of a converted value",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "rawValue": {
+              "title": "Raw Value",
+              "description": "The skill data point containing the raw value to be converted.",
+              "$ref": "#/$defs/keyType"
+            },
+            "mappings": {
+              "title": "Value Mappings",
+              "description": "The mappings used to convert between raw and converted values",
+              "type": "array",
+              "items": {
+                "title": "Value Mapping",
+                "description": "An single mapping between a raw and a converted value",
+                "type": "object",
+                "properties": {
+                  "raw": {
+                    "title": "Raw Value",
+                    "description": "The raw value to map",
+                    "type": "number"
+                  },
+                  "mapped": {
+                    "title": "Mapped Value",
+                    "description": "The converted value to map the raw value to",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "raw",
+                  "mapped"
+                ],
+                "unevaluatedProperties": false
+              }
+            }
+          },
+          "required": [
+            "name",
+            "UUID",
+            "rawValue",
+            "mappings"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "@Skill.SignalProcessing.Bit": {
+      "title": "Bit Value",
+      "description": "A bit value extracted from another skill data point",
+      "type": "object",
+      "properties": {
+        "@Skill.SignalProcessing.Bit": {
+          "title": "Bit Value Properties",
+          "description": "The properties of a bit value",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "source": {
+              "title": "Raw Value",
+              "description": "The skill data point containing the value to extract the bit from.",
+              "$ref": "#/$defs/keyType"
+            },
+            "bitNumber": {
+              "title": "Bit Number",
+              "description": "The 0-based bit number to extract, where 0 is the least significant bit",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 63
+            }
+          },
+          "required": [
+            "name",
+            "UUID",
+            "source",
+            "bitNumber"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "@Skill.SignalProcessing.SummaryState": {
+      "title": "Summary State",
+      "description": "A summary state that summarizes multiple other states",
+      "type": "object",
+      "properties": {
+        "@Skill.SignalProcessing.SummaryState": {
+          "title": "Summary State Properties",
+          "description": "The properties of a summary state",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "operator": {
+              "title": "Operator",
+              "description": "The logical operator to use to combine the states",
+              "type": "string",
+              "enum": [ "or", "and" ]
+            },
+            "states": {
+              "title": "States",
+              "description": "The data points whose states should be summarized",
+              "type": "array",
+              "items": {
+                "title": "State",
+                "description": "A data point whose states should be considered when summarizing",
+                "$ref": "#/$defs/keyType"
+              }
+            }
+          },
+          "required": [
+            "name",
+            "UUID",
+            "states"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "@Skill.SignalFlow.Register": {
+      "title": "Register",
+      "description": "A register to hold a single value",
+      "type": "object",
+      "properties": {
+        "@Skill.SignalFlow.Register": {
+          "title": "Register Properties",
+          "description": "The properties of the register",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "defaultValue": {
+              "title": "Default Value",
+              "description": "The data type and default value",
+              "type": "array",
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "title": "Data Type",
+                  "description": "The data type of the contained value",
+                  "type": "string",
+                  "enum": [ "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "float32", "float64", "bool", "string", "timeStamp", "UUID" ],
+                  "default": "float64"
+                },
+                {
+                  "title": "Default Value",
+                  "description": "The default value",
+                  "oneOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "boolean"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ],
+                  "default": 0
+                }
+              ],
+              "items": false
+            }
+          },
+          "required": [
+            "name",
+            "UUID",
+            "defaultValue"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "@Skill.SignalFlow.EdgeDetection": {
+      "title": "Edge Detection",
+      "description": "A microservice that performs edge detection",
+      "type": "object",
+      "properties": {
+        "@Skill.SignalFlow.EdgeDetection": {
+          "title": "Edge Detection Properties",
+          "description": "The properties of an edge detection element",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "value": {
+              "title": "Monitored Value",
+              "description": "The skill data point whose value the edges detection should be performed on.",
+              "$ref": "#/$defs/keyType"
+            }
+          },
+          "required": [
+            "name",
+            "UUID",
+            "value"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "@Skill.SignalFlow.Bridge": {
+      "title": "Signal Bridge",
+      "description": "A microservice that copies values between attribute",
+      "type": "object",
+      "properties": {
+        "@Skill.SignalFlow.Bridge": {
+          "title": "Signal Bridge Properties",
+          "description": "The properties of the debugging logger microservice",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "stages": {
+              "title": "Execution Stages",
+              "description": "The execution stages where copying should take place. Default is operational stage only.",
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "title": "Execution Stage",
+                    "description": "An execution stage where copying should take place",
+                    "type": "string",
+                    "enum": [ "startup", "preop", "op", "postop", "shutdown" ]
+                  }
+                },
+                {
+                  "type": "string",
+                  "const": "all"
+                }
+              ]
+            },
+            "connections": {
+              "title": "Connections",
+              "description": "The list of attribute connections",
+              "type": "array",
+              "items": {
+                "title": "Attribute Connection",
+                "description": "A connection between two attributes",
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "title": "Source Attribute Key",
+                    "description": "The primary key of the attribute to read the value from",
+                    "$ref": "#/$defs/keyType"
+                  },
+                  "target": {
+                    "title": "Target Attribute Key",
+                    "description": "The primary key of the attribute to write the value to",
+                    "$ref": "#/$defs/keyType"
+                  },
+                  "errorHandler": {
+                    "title": "Error Handler Attribute Key",
+                    "description": "The primary key of the attribute to write error messages to",
+                    "$ref": "#/$defs/keyType"
+                  }
+                },
+                "required": [
+                  "source",
+                  "target"
+                ],
+                "unevaluatedProperties": false
+              }
+            }
+          },
+          "required": [
+            "name",
+            "UUID"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "@Skill.SignalGenerator.Sampler": {
+      "title": "Signal Generator Sampler",
+      "description": "An I/O component that generates synthetic signals",
+      "type": "object",
+      "properties": {
+        "@Skill.SignalGenerator.Sampler": {
+          "title": "Signal Generator Sampler Properties",
+          "description": "The properties of the signal generator sampler I/O component",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "children": {
+              "title": "Children",
+              "description": "The child components",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/@Skill.SignalGenerator.Signal"
+              }
+            }
+          },
+          "required": [
+            "name",
+            "UUID"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "@Skill.SignalGenerator.Signal": {
+      "title": "Signal Generator Signal",
+      "description": "A single signal within a signal generator sampler",
+      "type": "object",
+      "properties": {
+        "@Skill.SignalGenerator.Signal": {
+          "title": "Signal Generator Signal Properties",
+          "description": "The properties of the signal generator signal",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "dataType": {
+              "title": "Data Type",
+              "description": "The data type of the generated signal.",
+              "type": "string",
+              "enum": [ "int8", "uint8", "int16", "uint16", "int32", "uint32", "int64", "uint64", "float32", "float64", "bool" ],
+              "default": "float64"
+            },
+            "top": {
+              "title": "Top Value",
+              "description": "The top of the value range of the generated signal.",
+              "type": [ "number", "boolean" ],
+              "default": 1
+            },
+            "bottom": {
+              "title": "Bottom Value",
+              "description": "The top of the value range of the generated signal.",
+              "type": [ "number", "boolean" ],
+              "default": 0
+            },
+            "waveForm": {
+              "title": "Wave Form",
+              "description": "The wave form to generate.",
+              "type": "object",
+              "oneOf": [
+                {
+                  "properties": {
+                    "@Pulse": {
+                      "title": "Pulse Wave Form Properties",
+                      "description": "The properties of the pulse wave form",
+                      "type": "object",
+                      "properties": {
+                        "period": {
+                          "title": "Period",
+                          "description": "The period of the wave",
+                          "$ref": "#/$defs/positiveTimeIntervalType",
+                          "default": "1s"
+                        },
+                        "phaseOffset": {
+                          "title": "Phase Offset",
+                          "description": "The phase offset",
+                          "$ref": "#/$defs/nonNegativeTimeIntervalType",
+                          "default": "0"
+                        },
+                        "pulseWidth": {
+                          "title": "Pulse Width",
+                          "description": "The width of the “high” phase of the pulse",
+                          "$ref": "#/$defs/positiveTimeIntervalType",
+                          "default": "0.5s"
+                        }
+                      },
+                      "required": [
+                        "period",
+                        "pulseWidth"
+                      ],
+                      "unevaluatedProperties": false
+                    }
+                  },
+                  "unevaluatedProperties": false
+                },
+                {
+                  "properties": {
+                    "@SineWave": {
+                      "title": "Sine Wave Form Properties",
+                      "description": "The properties of the sine wave form",
+                      "type": "object",
+                      "properties": {
+                        "period": {
+                          "title": "Period",
+                          "description": "The period of the wave",
+                          "$ref": "#/$defs/positiveTimeIntervalType",
+                          "default": "1s"
+                        },
+                        "phaseOffset": {
+                          "title": "Phase Offset",
+                          "description": "The phase offset",
+                          "$ref": "#/$defs/nonNegativeTimeIntervalType",
+                          "default": "0"
+                        }
+                      },
+                      "required": [
+                        "period"
+                      ],
+                      "unevaluatedProperties": false
+                    }
+                  },
+                  "unevaluatedProperties": false
+                },
+                {
+                  "properties": {
+                    "@Triangle": {
+                      "title": "Triangle Wave Form Properties",
+                      "description": "The properties of the triangle wave form",
+                      "type": "object",
+                      "properties": {
+                        "period": {
+                          "title": "Period",
+                          "description": "The period of the wave",
+                          "$ref": "#/$defs/positiveTimeIntervalType",
+                          "default": "1s"
+                        },
+                        "phaseOffset": {
+                          "title": "Phase Offset",
+                          "description": "The phase offset",
+                          "$ref": "#/$defs/nonNegativeTimeIntervalType",
+                          "default": "0"
+                        }
+                      },
+                      "required": [
+                        "period"
+                      ],
+                      "unevaluatedProperties": false
+                    }
+                  },
+                  "unevaluatedProperties": false
+                },
+                {
+                  "properties": {
+                    "@SawTooth": {
+                      "title": "Saw Tooth Wave Form Properties",
+                      "description": "The properties of the saw-tooth wave form",
+                      "type": "object",
+                      "properties": {
+                        "period": {
+                          "title": "Period",
+                          "description": "The period of the wave",
+                          "$ref": "#/$defs/positiveTimeIntervalType",
+                          "default": "1s"
+                        },
+                        "phaseOffset": {
+                          "title": "Phase Offset",
+                          "description": "The phase offset",
+                          "$ref": "#/$defs/nonNegativeTimeIntervalType",
+                          "default": "0"
+                        }
+                      },
+                      "required": [
+                        "period"
+                      ],
+                      "unevaluatedProperties": false
+                    }
+                  },
+                  "unevaluatedProperties": false
+                },
+                {
+                  "properties": {
+                    "@Noise": {
+                      "title": "Noise Wave Form Properties",
+                      "description": "The properties of the noise wave form",
+                      "type": "object",
+                      "unevaluatedProperties": false
+                    }
+                  },
+                  "unevaluatedProperties": false
+                }
+              ]
+            }
+          },
+          "required": [
+            "name",
+            "UUID",
+            "dataType",
+            "top",
+            "bottom",
+            "waveForm"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "@Skill.Debugging.Inspector": {
+      "title": "Debugging Inspector",
+      "description": "A microservice that prints attribute values to the standard output",
+      "type": "object",
+      "properties": {
+        "@Skill.Debugging.Inspector": {
+          "title": "Debugging Inspector Properties",
+          "description": "The properties of the debugging inspector microservice",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "title": {
+              "title": "Title",
+              "description": "The title for the output. Can be empty or omitted if no title is desired.",
+              "type": "string"
+            },
+            "attributes": {
+              "title": "Attributes",
+              "description": "The list of attributes to print",
+              "type": "array",
+              "items": {
+                "title": "Attribute Key",
+                "description": "The primary key of the attribute to print",
+                "$ref": "#/$defs/keyType"
+              }
+            }
+          },
+          "required": [
+            "name",
+            "UUID"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "@Skill.Debugging.Logger": {
+      "title": "Debugging Logger",
+      "description": "A microservice that print messages to the standard output",
+      "type": "object",
+      "properties": {
+        "@Skill.Debugging.Logger": {
+          "title": "Debugging Logger Properties",
+          "description": "The properties of the debugging logger microservice",
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/nameType"
+            },
+            "UUID": {
+              "$ref": "#/$defs/uuidType"
+            },
+            "ACL": {
+              "$ref": "#/$defs/aclType"
+            },
+            "caption": {
+              "title": "Caption",
+              "description": "The caption for the output. Can be empty or omitted if no caption is desired.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "UUID"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    }
+  },
+  "title": "Xentara Model",
+  "description": "Anonymous root node of the Xentara model",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri"
+    },
+    "ACL": {
+      "title": "ACL",
+      "description": "The access control list of the Xentara model",
+      "type": "object",
+      "properties": {
+        "entries": {
+          "title": "ACL Entries",
+          "description": "The entries in the access control list",
+          "type": "array",
+          "items": {
+            "title": "ACL Entry",
+            "description": "An entry in an access control list",
+            "type": "object",
+            "properties": {
+              "role": {
+                "title": "Role",
+                "description": "The role this entry applies to",
+                "type": "string",
+                "minLength": 1
+              },
+              "allow": {
+                "title": "Allow List",
+                "description": "The list of entitlements to allow for this role",
+                "type": "array",
+                "items": {
+                  "title": "Allowed Entitlement",
+                  "description": "An entitlement to allow for this role",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "deny": {
+                "title": "Deny List",
+                "description": "The list of entitlements to deny for this role",
+                "type": "array",
+                "items": {
+                  "title": "Denied Entitlement",
+                  "description": "An entitlement to deny for this role",
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "role"
+            ],
+            "unevaluatedProperties": false
+          }
+        },
+        "inherit": {
+          "title": "Inherit Global ACL",
+          "description": "Whether the ACL entries of the global security configuration should be inherited",
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "children": {
+      "title": "Top Level Components",
+      "description": "The top level components",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/@Group/$defs/items"
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

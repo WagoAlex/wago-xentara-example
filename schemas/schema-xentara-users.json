@@ -1,0 +1,50 @@
+{
+  "$id": "https://docs.xentara.io/xentara/schema-xentara-users.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Xentara User Configuration",
+  "description": "The root of the Xentara user configuration file",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri"
+    },
+    "users": {
+      "title": "Users",
+      "description": "The list of defined Xentara users",
+      "type": "array",
+      "items": {
+        "title": "User",
+        "description": "A Xentara user",
+        "type": "object",
+        "properties": {
+          "UUID": {
+            "title": "UUID",
+            "description": "The unique UUID of the user",
+            "type": "string",
+            "format": "uuid"
+          },
+          "userName": {
+            "title": "User Name",
+            "description": "The user name of the user",
+            "type": "string",
+            "minLength": 1
+          },
+          "roles": {
+            "title": "Roles",
+            "description": "Additional roles (beyond \"Everyone\") to this user",
+            "type": "array",
+            "items": {
+              "title": "Role",
+              "description": "A single role to assign to this user",
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "unevaluatedProperties": false
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

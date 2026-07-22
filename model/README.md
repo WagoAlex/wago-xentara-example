@@ -1,14 +1,21 @@
 # Models
 
-Three model files, for three situations. All of them run the EtherCAT bus by
-pairing a 1 ms `@Timer` with a `@Pipeline` that calls `EtherCAT Terminal.loop`
-every cycle - that loop is what actually exchanges I/O with the coupler.
+Four model files. Three EtherCAT templates/reference for three situations,
+all running the bus by pairing a 1 ms `@Timer` with a `@Pipeline` that calls
+`EtherCAT Terminal.loop` every cycle - that loop is what actually exchanges
+I/O with the coupler - plus Xentara's own hardware-free demo.
 
 | File | Use it when | Custom C++ needed? |
 |---|---|---|
 | `template-minimal.json` | **Start here.** You want to discover your real bus and edit I/O in the TUI, nothing more. | No |
 | `template-rtt.json` | You also want live cycle-time (RTT) numbers. | Yes - `control/ethercat-rtt-probe` |
+| `template-rtt-kbus.json` | You also want a *verified hardware* round trip (real DO->DI and AO->AI, not just cycle time), and have two loopback wires spare. | Yes - `control/ethercat-kbus-rtt-probe` |
 | `example-8di8do.json` | Reference: a complete, hand-written model for one coupler + one 8DI/8DO module, to read and learn from. | No |
+
+No EtherCAT hardware yet? `../schemas/sample-model.json` is Xentara's own
+demo model - a signal generator feeding synthetic waveforms into a debug
+inspector, no bus or wiring required. See the top-level `README.md` for how
+to run it.
 
 ## The templates are for the discovery tool
 

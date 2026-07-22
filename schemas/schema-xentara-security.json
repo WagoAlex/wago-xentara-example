@@ -1,0 +1,177 @@
+{
+  "$id": "https://docs.xentara.io/xentara/schema-xentara-security.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Xentara Security File",
+  "description": "The root of the Xentara security file",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri"
+    },
+    "TLS": {
+      "title": "TLS Configuration",
+      "description": "Configuration for TLS (formerly SSL)",
+      "type": "object",
+      "properties": {
+        "serverCertificate": {
+          "title": "TLS Server Certificate",
+          "description": "Server certificate paths for TLS servers. Can be omitted to use the default paths.",
+          "type": "object",
+          "properties": {
+            "certificatePath": {
+              "title": "TLS certificate path",
+              "description": "The relative or absolute path to the TLS server certificate.",
+              "type": "string",
+              "minLength": 1
+            },
+            "privateKeyPath": {
+              "title": "TLS certificate path",
+              "description": "The relative or absolute path to the private key file belonging to the TLS server certificate.",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "certificatePath",
+            "privateKeyPath"
+          ],
+          "unevaluatedProperties": false
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "roles": {
+      "title": "Roles",
+      "description": "User roles for configuring access to features and elements",
+      "type": "array",
+      "items": {
+        "title": "Role",
+        "description": "A user role for configuring access to features and elements",
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "description": "The name of the role",
+            "type": "string",
+            "minLength": 1,
+            "not": {
+              "const": "Everyone"
+            }
+          },
+          "UUID": {
+            "title": "UUID",
+            "description": "The unique UUID of the role",
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "name",
+          "UUID"
+        ],
+        "unevaluatedProperties": false
+      }
+    },
+    "entitlements": {
+      "title": "Entitlements",
+      "description": "Custom entitlements for fine-tuning access",
+      "type": "array",
+      "items": {
+        "title": "Entitlement",
+        "description": "A custom entitlements for fine-tuning access",
+        "type": "object",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "description": "The name of the entitlement",
+            "type": "string",
+            "minLength": 1,
+            "not": {
+              "const": "Everyone"
+            }
+          },
+          "UUID": {
+            "title": "UUID",
+            "description": "The unique UUID of the entitlement",
+            "type": "string",
+            "format": "uuid"
+          },
+          "default": {
+            "title": "Default Access",
+            "description": "The default access to use if no ACL specifies an access",
+            "type": "string",
+            "enum": [
+              "allow",
+              "deny"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "UUID"
+        ],
+        "unevaluatedProperties": false
+      }
+    },
+    "ACL": {
+      "title": "ACL",
+      "description": "The global access control list",
+      "type": "object",
+      "properties": {
+        "entries": {
+          "title": "ACL Entries",
+          "description": "The entries in the access control list",
+          "type": "array",
+          "items": {
+            "title": "ACL Entry",
+            "description": "An entry in an access control list",
+            "type": "object",
+            "properties": {
+              "role": {
+                "title": "Role",
+                "description": "The role this entry applies to",
+                "type": "string",
+                "minLength": 1
+              },
+              "allow": {
+                "title": "Allow List",
+                "description": "The list of entitlements to allow for this role",
+                "type": "array",
+                "items": {
+                  "title": "Allowed Entitlement",
+                  "description": "An entitlement to allow for this role",
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "deny": {
+                "title": "Deny List",
+                "description": "The list of entitlements to deny for this role",
+                "type": "array",
+                "items": {
+                  "title": "Denied Entitlement",
+                  "description": "An entitlement to deny for this role",
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            },
+            "required": [
+              "role"
+            ],
+            "unevaluatedProperties": false
+          }
+        },
+        "inherit": {
+          "title": "Inherit Default ACL",
+          "description": "Whether the default configuration for the ACL entries should be inherited",
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "unevaluatedProperties": false
+    }
+  },
+  "unevaluatedProperties": false
+}

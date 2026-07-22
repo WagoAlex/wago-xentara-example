@@ -1,0 +1,198 @@
+{
+  "$id": "https://docs.xentara.io/xentara/schema-xentara-client-certs.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Xentara Client Certificate Configuration File",
+  "description": "The root of the Xentara client certificate configuration file",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri"
+    },
+    "rules": {
+      "title": "Matching Rules",
+      "description": "The matching rules used to assign roles to certificates",
+      "type": "array",
+      "items": {
+        "description": "A single matching rule used to assign roles to certificates",
+        "type": "object",
+        "oneOf": [
+          {
+            "properties": {
+              "issuer": {
+                "title": "Issuer DN",
+                "description": "The full distinguished name of the issuer, in first-to-last order (C= or DC= first)",
+                "type": "string",
+                "minLength": 1
+              },
+              "serialNumber": {
+                "title": "Certificate Serial Number",
+                "description": "The serial number of the client certificate's public key, in hexadecimal format",
+                "type": "string",
+                "anyOf": [
+                  {
+                    "pattern": "^[0-9a-fA-F]+$"
+                  },
+                  {
+                    "pattern": "^([0-9a-fA-F]{2} ){19}[0-9a-fA-F]{2}$"
+                  }
+                ]
+              },
+              "SKI": {
+                "title": "Subject Key Identifier",
+                "description": "The subject key identifier of the client certificate",
+                "type": "string",
+                "anyOf": [
+                  {
+                    "pattern": "^[0-9a-fA-F]+$"
+                  },
+                  {
+                    "pattern": "^([0-9a-fA-F]{2} )*[0-9a-fA-F]{2}$"
+                  }
+                ]
+              },
+              "subject": {
+                "title": "Subject DN",
+                "description": "The full distinguished name of the subject, in first-to-last order (C= or DC= first)",
+                "type": "string",
+                "minLength": 1
+              },
+              "subjectPrefix": {
+                "title": "Subject DN Prefix",
+                "description": "Leading components of the distinguished name of the subject, in first-to-last order (C= or DC= first)",
+                "type": "string",
+                "minLength": 1
+              },
+              "publicKeySHA256": {
+                "title": "Public Key SHA-256 Hash",
+                "description": "The SHA-256 hash of the client certificate's public key",
+                "type": "string",
+                "anyOf": [
+                  {
+                    "pattern": "^[0-9a-fA-F]{64}$"
+                  },
+                  {
+                    "pattern": "^([0-9a-fA-F]{2}:){31}[0-9a-fA-F]{2}$"
+                  },
+                  {
+                    "pattern": "^([0-9a-fA-F]{2} ){31}[0-9a-fA-F]{2}$"
+                  }
+                ]
+              },
+              "publicKeySHA1": {
+                "title": "Public Key SHA-1 Hash",
+                "description": "The SHA-1 hash of the client certificate's public key",
+                "type": "string",
+                "anyOf": [
+                  {
+                    "pattern": "^[0-9a-fA-F]{40}$"
+                  },
+                  {
+                    "pattern": "^([0-9a-fA-F]{2}:){19}[0-9a-fA-F]{2}$"
+                  },
+                  {
+                    "pattern": "^([0-9a-fA-F]{2} ){19}[0-9a-fA-F]{2}$"
+                  }
+                ]
+              },
+              "NTDSObjectSID": {
+                "title": "Active Directory Object SID",
+                "description": "The Microsoft Active Directory (NTDS) object SID stored in the certificate's ntdsCASecurityExt extension",
+                "type": "string",
+                "pattern": "^S(-[0-9]+){3,}$"
+              }
+            },
+            "required": [
+              "issuer"
+            ]
+          },
+          {
+            "properties": {
+              "fingerprint": {
+                "title": "Client certificate fingerprint",
+                "description": "The SHA-256 or SHA-1 fingerprint of the client certificate",
+                "type": "string",
+                "anyOf": [
+                  {
+                    "pattern": "^[0-9a-fA-F]{64}$"
+                  },
+                  {
+                    "pattern": "^([0-9a-fA-F]{2}:){31}[0-9a-fA-F]{2}$"
+                  },
+                  {
+                    "pattern": "^([0-9a-fA-F]{2} ){31}[0-9a-fA-F]{2}$"
+                  },
+                  {
+                    "pattern": "^[0-9a-fA-F]{40}$"
+                  },
+                  {
+                    "pattern": "^([0-9a-fA-F]{2}:){19}[0-9a-fA-F]{2}$"
+                  },
+                  {
+                    "pattern": "^([0-9a-fA-F]{2} ){19}[0-9a-fA-F]{2}$"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "fingerprint"
+            ]
+          },
+          {
+            "properties": {
+              "certificatePath": {
+                "title": "Client certificate path",
+                "description": "The relative or absolute path to the client certificate",
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "certificatePath"
+            ]
+          }
+        ],
+        "properties": {
+          "roles": {
+            "title": "Roles",
+            "description": "Additional roles (beyond \"Everyone\") to assign to clients whose certificate matches this rule",
+            "type": "array",
+            "items": {
+              "title": "Role",
+              "description": "A single role to assign to clients whose certificate matches this rule",
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "unevaluatedProperties": false
+      }
+    },
+    "rootCertificates": {
+      "title": "Issuer Root Certificates",
+      "description": "Custom root certificates for certificate issuers",
+      "contentMediaType": "array",
+      "items": {
+        "title": "Issuer Root Certificate",
+        "description": "Custom root certificate for a single certificate issuer",
+        "type": "object",
+        "properties": {
+          "issuer": {
+            "title": "Issuer DN",
+            "description": "The full distinguished name of the issuer",
+            "type": "string",
+            "minLength": 1
+          },
+          "certificatePath": {
+            "title": "Root certificate path",
+            "description": "The relative or absolute path to the root certificate that this issuer uses",
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "unevaluatedProperties": false
+    }
+  },
+  "unevaluatedProperties": false
+}

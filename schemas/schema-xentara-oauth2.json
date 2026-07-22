@@ -1,0 +1,156 @@
+{
+  "$id": "https://docs.xentara.io/xentara/schema-xentara-oauth2.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Xentara OAuth 2.0 Configuration File",
+  "description": "The root of the Xentara OAuth 2.0 configuration file",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri"
+    },
+    "scope": {
+      "title": "OAuth 2.0 scope",
+      "description": "scope strings for the OAuth 2.0 framework. These are returned in the WWW-Authenticate header, and must be present in valid authentication tokens.",
+      "type": "array",
+      "items": {
+        "title": "OAuth 2.0 scope string",
+        "description": "A single scope string in the OAuth 2.0 scope",
+        "type": "string",
+        "pattern": "^[]!#$%&'()*+,.@/0-9:;<=>?A-Z[^_`a-z{|}~-]+$"
+      }
+    },
+    "issuers": {
+      "title": "Issuers",
+      "description": "List of all recognized token issuers",
+      "type": "array",
+      "items": {
+        "title": "Issuer",
+        "description": "A toke issuer",
+        "type": "object",
+        "properties": {
+          "iss": {
+            "title": "Issuer claim",
+            "description": "The value of the iss (issuer) claim used by the issuer",
+            "type": "string",
+            "minLength": 1
+          },
+          "aud": {
+            "title": "Audience claim",
+            "description": "The value of the aud (audience) claim to be used for the issuer",
+            "type": "string",
+            "minLength": 1
+          },
+          "roles": {
+            "title": "Roles",
+            "description": "Additional roles (beyond \"Everyone\") to assign to clients authorized using this issuer",
+            "type": "array",
+            "items": {
+              "title": "Role",
+              "description": "A single role to assign to clients authorized using this issuer",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "authorizationClaims": {
+            "title": "Authorization claims",
+            "description": "The authorization claims provided by the issuer",
+            "type": "object",
+            "patternProperties": {
+              ".*": {
+                "title": "Authorization claim",
+                "description": "A single authorization claim provided by the issuer",
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "patternProperties": {
+                      ".*": {
+                        "title": "Authorization claim roles",
+                        "description": "The list of roles assigned to an authorization claim value",
+                        "type": "array",
+                        "items": {
+                          "title": "Authorization claim role",
+                          "description": "A single of roles assigned to an authorization claim value",
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      }
+                    },
+                    "unevaluatedProperties": false
+                  },
+                  {
+                    "type": "string",
+                    "const": "implicit"
+                  }
+                ]
+              }
+            },
+            "unevaluatedProperties": false
+          },
+          "verification": {
+            "title": "Token verification",
+            "description": "The verification mechanism used for the issuer",
+            "type": "object"
+          },
+          "nonConformance": {
+            "title": "Non-Conformance options",
+            "description": "Options to allow non-conforming behaviour for this issuer",
+            "type": "object",
+            "properties": {
+              "allowGenericJwt": {
+                "title": "Allow \"JWT\" as token type",
+                "description": "Whether to allow a value of \"JWT\" for the \"typ\" (type) header parameter in addition to \"at+jwt\" or \"application/at+jwt\"",
+                "type": "boolean",
+                "default":  false
+              },
+              "allowMissingTyp": {
+                "title": "Allow missing \"typ\" header parameter",
+                "description": "Whether to accept tokens without a \"typ\" (type) header property",
+                "type": "boolean",
+                "default": false
+              },
+              "allowMissingIat": {
+                "title": "Allow missing \"iat\" claim",
+                "description": "Whether to accept tokens without an \"iat\" (assued at) claim",
+                "type": "boolean",
+                "default": false
+              },
+              "allowMissingExp": {
+                "title": "Allow missing \"exp\" claim",
+                "description": "Whether to accept tokens without an \"exp\" (expiration time) claim",
+                "type": "boolean",
+                "default": false
+              },
+              "allowMissingSub": {
+                "title": "Allow missing \"sub\" claim",
+                "description": "Whether to accept tokens without a \"sub\" (subject) claim",
+                "type": "boolean",
+                "default": false
+              },
+              "allowMissingClientId": {
+                "title": "Allow missing \"client_id\" claim",
+                "description": "Whether to accept tokens without a \"client_id\" (client identifier) claim",
+                "type": "boolean",
+                "default": false
+              },
+              "allowMissingJti": {
+                "title": "Allow missing \"jti\" claim",
+                "description": "Whether to accept tokens without a \"jti\" (JWT ID) claim",
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "unevaluatedProperties": false
+          }
+        },
+        "required": [
+          "iss",
+          "aud",
+          "verification"
+        ],
+        "unevaluatedProperties": false
+      }
+    }
+  },
+  "unevaluatedProperties": false
+}

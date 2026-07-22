@@ -1,0 +1,76 @@
+{
+  "$id": "https://docs.xentara.io/xentara/schema-xentara-config.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Xentara Config File",
+  "description": "The root of the Xentara config file",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri"
+    },
+    "httpServer": {
+      "title": "HTTP Server Configuration",
+      "description": "The configuration for the built-in Xentara HTTP server",
+      "type": "object",
+      "properties": {
+        "port": {
+          "title": "Port Number",
+          "description": "The TCP port number of the HTTP server",
+          "type": "number",
+          "minimum": 1,
+          "default": 8080,
+          "maximum": 65535
+        },
+        "authentication": {
+          "title": "Authentication",
+          "description": "The authentication options for the HTTP server",
+          "type": "object",
+          "properties": {
+            "realm": {
+              "title": "Realm",
+              "description": "The HTTP protection space (realm) for the WWW-Authenticate header",
+              "type": "string",
+              "pattern": "^[\u0020-\u007e]*$"
+            },
+            "schemes": {
+              "title": "Authentication Schemes",
+              "description": "The authentication schemes supported by the HTTP server",
+              "type": "array",
+              "items": {
+                "title": "Authentication Scheme",
+                "description": "An authentication schemes supported by the HTTP server",
+                "type": "string",
+                "enum": [ "Bearer", "Basic" ]
+              }
+            },
+            "scope": {
+              "title": "OAuth 2.0 Scope",
+              "description": "The scope for OAuth 2.0 authentication",
+              "type": "array",
+              "items": {
+                "title": "OAuth 2.0 Scope String",
+                "description": "A scope string to include in the OAuth 2.0 scope",
+                "type": "string",
+                "pattern": "^[!#-\\[\\]-~]+$"
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "required": [
+        "port"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "patternProperties": {
+    "^skill\\..+": {
+      "title": "Skill Configuration",
+      "description": "The configuration section for a specific Xentara skill",
+      "type": "object"
+    }
+  },
+  "unevaluatedProperties": false
+}
