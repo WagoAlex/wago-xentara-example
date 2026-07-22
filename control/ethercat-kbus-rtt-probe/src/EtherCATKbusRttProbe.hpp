@@ -60,21 +60,29 @@ private:
     static constexpr std::uint16_t kAnalogTolerance{40};
     static constexpr std::uint16_t kAnalogRampStepPerCycle{100};
 
-    /// Bundles the min/max/avg/sample-count bookkeeping and the matching
-    /// output data points for one round-trip measurement. Used for the
-    /// analog step and gradual measurements; the digital Kbus measurement
-    /// predates this and keeps its own hand-written fields below.
+    /// Bundles the min/max/avg/std-dev/sample-count bookkeeping and the
+    /// matching output data points for one round-trip measurement. Used
+    /// for the digital Kbus and both analog measurements.
+    ///
+    /// Standard deviation is computed online via Welford's algorithm
+    /// (mean and M2, the running sum of squared deviations from the mean)
+    /// rather than accumulating sum-of-squares directly, since that is
+    /// numerically stable over millions of samples - a plain sum of
+    /// squares of millisecond-scale values loses precision in a double
+    /// long before that.
     struct RoundTripStats
     {
         double msMin{std::numeric_limits<double>::infinity()};
         double msMax{0.0};
-        double msSum{0.0};
+        double msMean{0.0};
+        double m2{0.0};
         std::uint64_t sampleCount{0};
 
         xentara::DoubleOutput msLastOut;
         xentara::DoubleOutput msMinOut;
         xentara::DoubleOutput msMaxOut;
         xentara::DoubleOutput msAvgOut;
+        xentara::DoubleOutput msStdDevOut;
         xentara::UInt64Output sampleCountOut;
 
         void record(xentara::RunContext &context, double elapsedMs);
@@ -108,17 +116,8 @@ private:
     std::chrono::steady_clock::time_point waitStart{};
     std::uint64_t cyclesWaited{0};
 
-    double kbusMsMin{std::numeric_limits<double>::infinity()};
-    double kbusMsMax{0.0};
-    double kbusMsSum{0.0};
-    std::uint64_t kbusSampleCount{0};
-
     xentara::BooleanOutput kbusConnectedOut;
-    xentara::DoubleOutput kbusCycleLastMsOut;
-    xentara::DoubleOutput kbusCycleMinMsOut;
-    xentara::DoubleOutput kbusCycleMaxMsOut;
-    xentara::DoubleOutput kbusCycleAvgMsOut;
-    xentara::UInt64Output kbusSampleCountOut;
+    RoundTripStats kbusCycle;
 
     /// Analog AO->AI loopback round-trip state.
     xentara::UInt16Output aoOut;

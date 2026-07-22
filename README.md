@@ -187,18 +187,37 @@ From Portainer: **Containers -> xentara-tryout -> Console -> Connect**, then:
 xentara-tui --host localhost --port 8080 --user xentara
 ```
 
+![Launching the TUI from the Portainer container console](images/tui-start-from-portainer.png)
+
 (Port **8080**.) Navigate the model tree with the arrow keys, Enter to descend.
 The [Xentara on Docker: Quick Start](https://kb.xentara.io/articles/xentara-on-docker-quick-start-guide)
 guide covers the same TUI walkthrough if you want the vendor's version.
 
+![Navigating to the discovered EtherCAT bus and coupler in the model tree](images/tui-wago-coupler-750-354.png)
+
 - **Read inputs:** open the discovered bus (or the `WagoIO` datapoint group if
   you added one) and watch input channels update live as you toggle physical
   inputs.
+
+  ![Browsing a digital output data point (WagoIO.DO_8ch_1), live value and quality shown on the right](images/tui-do.png)
+
 - **Write an output:** select a digital output, press the write key, type
   `true`, Enter. It reaches the coupler on the next bus cycle and the physical
   output switches. Type `false` to release it.
+
+  ![Writing true to a digital output from the TUI's write dialog](images/tui-do-write.png)
+
+- **Analog values work the same way** - select an analog data point (e.g.
+  `WagoIO.AO_2`) and write a raw count instead of `true`/`false`.
+
+  | Browse | Write |
+  |---|---|
+  | ![Browsing an analog output data point (WagoIO.AO_2)](images/tui-analog.png) | ![Writing a new raw value to an analog output](images/tui-analog-write.png) |
+
 - **(If using the probe) cycle time:** open the `RTT` group for live
   `RttAvgMs` / `RttMinMs` / `RttMaxMs`.
+
+  ![Browsing RTT.RttAvgMs, the internal step-to-step cycle-time register](images/tui-variable-rtt-1ms.png)
 
 > Physical outputs switch real hardware. Know what's wired before toggling.
 
@@ -216,15 +235,27 @@ self-contained reference client. Full protocol: the
 
 `RTT.RttLastMs`/`MinMs`/`MaxMs`/`AvgMs` (from `EtherCATRttProbe`, above) measure
 the step()-to-step() interval, i.e. how close the achieved cycle is to the
-configured Timer period. That is a software/scheduling number, not a
+configured Timer period (browsable in the TUI as `Track EtherCAT
+Control.1ms Timer`, below). That is a software/scheduling number, not a
 hardware one: it says nothing about how long a physical output actually
 takes to reach a physical input.
+
+![Browsing the 1ms Timer that drives the EtherCAT control track](images/tui-variabl-track-time.png)
 
 `control/ethercat-kbus-rtt-probe/` adds that missing measurement: a real
 DO->DI round trip and a real AO->AI round trip, each gated on an actual
 connectivity check (`KbusConnected`/`AnalogConnected` only ever flip
 false -> true, on a real observed match, never on a timeout) so a missing
 wire reads as "not connected," never as a plausible-looking wrong number.
+
+It shows up in the TUI like any other control and register group - browse
+to `Control.EtherCATKbusRttProbe` to confirm it's loaded, or straight to
+`RTT.KbusCycleAvgMs` (or any of the other `RTT.*` registers) to watch the
+live numbers:
+
+| The control, as a Microservice | A live register value |
+|---|---|
+| ![Browsing Control.EtherCATKbusRttProbe in the TUI, shown as a C++ control microservice](images/tui-microservice-cpp.png) | ![Browsing RTT.KbusCycleAvgMs live, value 7.55ms](images/tui-kbus-cycle-avg.png) |
 
 ![Digital vs. analog step vs. analog gradual round-trip time, measured on real hardware](images/rtt-comparison.png)
 

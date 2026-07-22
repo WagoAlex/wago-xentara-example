@@ -1,15 +1,25 @@
 #include "EtherCATKbusRttProbe.hpp"
 
+#include <cmath>
+
 /// Registers EtherCATKbusRttProbe with Xentara.
 const xentara::ControlExporter<EtherCATKbusRttProbe> kEtherCATKbusRttProbe;
 
 void EtherCATKbusRttProbe::RoundTripStats::record(xentara::RunContext &context, double elapsedMs)
 {
-    msSum += elapsedMs;
     ++sampleCount;
 
+    // Welford's online algorithm for mean and variance.
+    const auto delta = elapsedMs - msMean;
+    msMean += delta / static_cast<double>(sampleCount);
+    const auto delta2 = elapsedMs - msMean;
+    m2 += delta * delta2;
+
+    const auto stdDev = sampleCount > 1 ? std::sqrt(m2 / static_cast<double>(sampleCount - 1)) : 0.0;
+
     msLastOut.write(context, elapsedMs);
-    msAvgOut.write(context, msSum / static_cast<double>(sampleCount));
+    msAvgOut.write(context, msMean);
+    msStdDevOut.write(context, stdDev);
     sampleCountOut.write(context, sampleCount);
 
     if (elapsedMs < msMin)
@@ -36,11 +46,12 @@ void EtherCATKbusRttProbe::initialize(xentara::InitContext &context)
     diIn = context.config().getDataPoint("Di");
 
     kbusConnectedOut = context.config().getDataPoint("KbusConnected");
-    kbusCycleLastMsOut = context.config().getDataPoint("KbusCycleLastMs");
-    kbusCycleMinMsOut = context.config().getDataPoint("KbusCycleMinMs");
-    kbusCycleMaxMsOut = context.config().getDataPoint("KbusCycleMaxMs");
-    kbusCycleAvgMsOut = context.config().getDataPoint("KbusCycleAvgMs");
-    kbusSampleCountOut = context.config().getDataPoint("KbusSampleCount");
+    kbusCycle.msLastOut = context.config().getDataPoint("KbusCycleLastMs");
+    kbusCycle.msMinOut = context.config().getDataPoint("KbusCycleMinMs");
+    kbusCycle.msMaxOut = context.config().getDataPoint("KbusCycleMaxMs");
+    kbusCycle.msAvgOut = context.config().getDataPoint("KbusCycleAvgMs");
+    kbusCycle.msStdDevOut = context.config().getDataPoint("KbusCycleStdMs");
+    kbusCycle.sampleCountOut = context.config().getDataPoint("KbusSampleCount");
 
     aoOut = context.config().getDataPoint("Ao");
     aiIn = context.config().getDataPoint("Ai");
@@ -50,11 +61,13 @@ void EtherCATKbusRttProbe::initialize(xentara::InitContext &context)
     analogStep.msMinOut = context.config().getDataPoint("AnalogStepMinMs");
     analogStep.msMaxOut = context.config().getDataPoint("AnalogStepMaxMs");
     analogStep.msAvgOut = context.config().getDataPoint("AnalogStepAvgMs");
+    analogStep.msStdDevOut = context.config().getDataPoint("AnalogStepStdMs");
     analogStep.sampleCountOut = context.config().getDataPoint("AnalogStepSampleCount");
     analogGradual.msLastOut = context.config().getDataPoint("AnalogGradualLastMs");
     analogGradual.msMinOut = context.config().getDataPoint("AnalogGradualMinMs");
     analogGradual.msMaxOut = context.config().getDataPoint("AnalogGradualMaxMs");
     analogGradual.msAvgOut = context.config().getDataPoint("AnalogGradualAvgMs");
+    analogGradual.msStdDevOut = context.config().getDataPoint("AnalogGradualStdMs");
     analogGradual.sampleCountOut = context.config().getDataPoint("AnalogGradualSampleCount");
 }
 
@@ -121,29 +134,24 @@ void EtherCATKbusRttProbe::stepDigitalKbus(xentara::RunContext &context, std::ch
 
     if (!kbusConnected)
     {
+        // This first round trip's elapsed time includes however long the
+        // K-Bus took to resync after startup - anywhere from milliseconds
+        // to several seconds - so it is not a real measurement. Recording
+        // it would permanently distort the running variance: the mean and
+        // min recover from one huge sample quickly, but Welford's M2 does
+        // not, it would take millions of steady-state samples to dilute
+        // it back down. Mark connected and skip straight to the next
+        // round instead.
         kbusConnected = true;
         kbusConnectedOut.write(context, true);
+        targetValue = !targetValue;
+        waitStart = now;
+        cyclesWaited = 0;
+        return;
     }
 
     const auto elapsedMs = std::chrono::duration<double, std::milli>(now - waitStart).count();
-
-    kbusMsSum += elapsedMs;
-    ++kbusSampleCount;
-
-    kbusCycleLastMsOut.write(context, elapsedMs);
-    kbusCycleAvgMsOut.write(context, kbusMsSum / static_cast<double>(kbusSampleCount));
-    kbusSampleCountOut.write(context, kbusSampleCount);
-
-    if (elapsedMs < kbusMsMin)
-    {
-        kbusMsMin = elapsedMs;
-        kbusCycleMinMsOut.write(context, kbusMsMin);
-    }
-    if (elapsedMs > kbusMsMax)
-    {
-        kbusMsMax = elapsedMs;
-        kbusCycleMaxMsOut.write(context, kbusMsMax);
-    }
+    kbusCycle.record(context, elapsedMs);
 
     // Flip target and start the next round.
     targetValue = !targetValue;
@@ -180,8 +188,15 @@ void EtherCATKbusRttProbe::stepAnalog(xentara::RunContext &context, std::chrono:
 
         if (!analogConnected)
         {
+            // Same reasoning as the digital connectivity check: this first
+            // round trip includes an unknown startup delay and would
+            // permanently distort the variance if recorded. Mark connected
+            // and move on without recording it.
             analogConnected = true;
             analogConnectedOut.write(context, true);
+            analogPhase = AnalogPhase::GradualDown;
+            analogPhaseJustEntered = true;
+            return;
         }
 
         const auto elapsedMs = std::chrono::duration<double, std::milli>(now - analogWaitStart).count();
