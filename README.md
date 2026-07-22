@@ -88,6 +88,8 @@ with Portainer:
    **Deploy the stack**. Portainer pulls the image (the "download") and
    starts it.
 
+![The xentara stack's compose file open in Portainer's editor on a real WAGO edge device, with the xentara-tryout container listed below as running](images/xentara-portianer-stack.png)
+
 The stack runs with host networking (needed so the EtherCAT master in Apps 2
 and 3 can reach the physical NIC - it costs nothing for App 1) and real-time
 privileges. Set `XENTARA_AFFINITY` to a core that exists on your CPU; see the
