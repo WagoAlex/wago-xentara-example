@@ -223,11 +223,13 @@ guide covers the same TUI walkthrough if you want the vendor's version.
 
 ### The TUI isn't magic - it's a Web Service client
 
-Editing a value is a single RPC over Xentara's WebSocket (port 8080, CBOR,
-subprotocol `xentara-v1`): **write the value attribute (id `11`) with opcode
-`5`**. Any HMI or script can drive I/O the same way; `xentara-tui` itself is a
-self-contained reference client. Full protocol: the
+Editing a value is a single RPC over Xentara's WebSocket (`wss://<host>:<port>/api/ws`,
+port 8080 by default - CBOR-encoded, HTTP Basic auth): **write the value attribute
+(id `11`) with opcode `5`**. Any HMI or script can drive I/O the same way;
+`xentara-tui` itself is a self-contained reference client. Full protocol: the
 [Xentara WebSocket API Specification](https://docs.xentara.io/xentara-websocket-api/).
+A minimal Python client to test this is in
+[`scripts/rtt_websocket_test.py`](scripts/rtt_websocket_test.py).
 
 ---
 
