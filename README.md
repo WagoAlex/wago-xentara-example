@@ -11,14 +11,20 @@ third runs with no hardware at all.
 
 ## Choose your app
 
-Every app shares the same first three steps (clone, deploy, license). After
-that they diverge, since only two of them touch a real EtherCAT bus.
+These three aren't independent choices - each one builds directly on the
+one before it. App 3 *is* App 2 plus wiring; App 2 *is* App 1 plus a real
+EtherCAT bus. Every app shares the same first three steps (clone, deploy,
+license); climb the ladder as far as your hardware allows.
 
-| App | Model file | Needs EtherCAT hardware? | What you get | Start at |
-|---|---|---|---|---|
-| **Xentara demo** | [`schemas/sample-model.json`](schemas/sample-model.json) | No | Synthetic waveforms (pulse, sine, ramp, noise) piped into a live debug inspector - confirms the runtime works before you touch any wiring. | [App 1](#app-1---xentara-demo-no-hardware) |
-| **WAGO RTT** | [`model/template-rtt.json`](model/template-rtt.json) | Yes | Your real I/O discovered and editable in the TUI, plus a live software cycle-time readout. | [App 2](#app-2---wago-rtt-ethercat--cycle-time) |
-| **WAGO RTT + K-Bus** | [`model/template-rtt-kbus.json`](model/template-rtt-kbus.json) | Yes, + 2 loopback wires | Everything App 2 has, plus a *verified hardware* round trip: a real digital and analog signal sent out and read back, timed for real. | [App 3](#app-3---wago-rtt--k-bus-verified-hardware-round-trip) |
+| | Model file | EtherCAT hardware | Loopback wiring | Licence skills needed | What you get |
+|---|---|---|---|---|---|
+| **App 1** - [Xentara demo](#app-1---xentara-demo-no-hardware) | [`schemas/sample-model.json`](schemas/sample-model.json) | Not needed | Not needed | Base runtime only | Synthetic waveforms (pulse, sine, ramp, noise) piped into a live debug inspector - confirms the runtime and licence work before you touch any wiring. |
+| **App 2** - [WAGO RTT](#app-2---wago-rtt-ethercat--cycle-time) | [`model/template-rtt.json`](model/template-rtt.json) | Required (coupler on the wire) | Not needed | `CoE` (EtherCAT) + `CPP` (C++ control) | Everything in App 1, plus your real I/O discovered and editable in the TUI, plus a live software cycle-time readout. |
+| **App 3** - [WAGO RTT + K-Bus](#app-3---wago-rtt--k-bus-verified-hardware-round-trip) | [`model/template-rtt-kbus.json`](model/template-rtt-kbus.json) | Required (same as App 2) | Required (2 loopback wires) | Same as App 2 - no extra skill | Everything in App 2, plus a *verified hardware* round trip: a real digital and analog signal sent out and read back, timed for real. |
+
+`CoE` and `CPP` are the licence skill names as they appear in your
+`licences.json`'s `skills` array - check yours covers both (with a current
+expiry date) before starting App 2 or 3.
 
 > [!TIP]
 > First time here? Run App 1 first. It proves the container, licence, and
@@ -264,6 +270,8 @@ Xentara reads it, and restart:
 
 Check the container **Logs** for `Using model file …` and no errors.
 
+![The loaded App 2 model's top-level tree: Control, RTT, EtherCAT Track, and the discovered EtherCAT Terminal](images/tui-app2-overview.png)
+
 Want to see a finished result before generating your own, or confirm the
 Workbench opens a generator-output file correctly? Open
 [`model/example-rtt.json`](model/example-rtt.json) - this repo's own actual
@@ -287,11 +295,13 @@ Navigate the model tree with the arrow keys, Enter to descend. The
 [Xentara on Docker: Quick Start](https://kb.xentara.io/articles/xentara-on-docker-quick-start-guide)
 guide covers the same TUI walkthrough if you want the vendor's version.
 
-![Navigating to the discovered EtherCAT bus and coupler in the model tree](images/tui-wago-coupler-750-354.png)
+![Navigating to the discovered EtherCAT bus and coupler in the model tree](images/tui-app2-wago-coupler-discover.png)
 
 - **Read inputs:** open the discovered bus (or the `WagoIO` datapoint group
   if you added one) and watch input channels update live as you toggle
   physical inputs.
+
+  ![Drilling into the discovered WAGO 750-354 coupler, subscribed to live updates on every K-Bus channel entry](images/tui-app2-wago-coupler-discover-details.png)
 
   ![Browsing a digital output data point (WagoIO.DO_8ch_1), live value and quality shown on the right](images/tui-do.png)
 
@@ -311,7 +321,12 @@ guide covers the same TUI walkthrough if you want the vendor's version.
 - **Cycle time:** open the `RTT` group for live `RttAvgMs` / `RttMinMs` /
   `RttMaxMs`.
 
-  ![Browsing RTT.RttAvgMs, the internal step-to-step cycle-time register](images/tui-variable-rtt-1ms.png)
+  ![Browsing RTT.RttAvgMs live on App 2's five-register RTT group, value settled at 1.000046ms](images/tui-app2-rtt-avg.png)
+
+  `RttSampleCount` climbs every cycle - proof the pipeline is actually
+  running, not just idling on a loaded-but-stalled model.
+
+  ![Browsing RTT.RttSampleCount live, climbing past 278,000 samples](images/tui-app2-samples.png)
 
 > [!WARNING]
 > Physical outputs switch real hardware. Know what's wired before toggling.
