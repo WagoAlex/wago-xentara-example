@@ -45,6 +45,8 @@ model/
   template-minimal.json            # generator input only - see warning above (discover + edit I/O)
   template-rtt.json                # generator input only - see warning above (+ live cycle-time metrics, App 2)
   template-rtt-kbus.json           # generator input only - see warning above (+ verified hardware round trip, App 3)
+  example-rtt.json                 # template-rtt.json's real generator output, importable as-is (App 2)
+  example-rtt-kbus.json            # template-rtt-kbus.json's real generator output, importable as-is (App 3)
   example-8di8do.json              # a complete, valid, hand-written model to learn from or import as-is
   README.md
 control/
@@ -259,9 +261,14 @@ Xentara reads it, and restart:
   ```
 
 Check the container **Logs** for `Using model file …` and no errors.
-[`model/example-8di8do.json`](model/example-8di8do.json) shows what a
-finished model looks like end to end (bus + I/O `@DataPoint` aliases +
-track) if you'd rather read one than generate one.
+
+Want to see a finished result before generating your own, or confirm the
+Workbench opens a generator-output file correctly? Open
+[`model/example-rtt.json`](model/example-rtt.json) - this repo's own actual
+`template-rtt.json` output from a WAGO 750-354 coupler - directly in the
+Workbench; it's a real model, not a template, and imports without running
+anything. [`model/example-8di8do.json`](model/example-8di8do.json) is a
+second, hand-written reference if you'd rather read one than generate one.
 
 ### Step E - Open the TUI and write an output (browser)
 
@@ -362,7 +369,10 @@ repo can't fill this in for you. In the loaded model, set the
 `Connection.Do` / `Di` / `Ao` / `Ai` data points' `io` fields to the two
 channels you actually wired (Xentara Workbench, or hand-edit and redeploy).
 See [`control/ethercat-kbus-rtt-probe/README.md`](control/ethercat-kbus-rtt-probe/README.md)
-for exactly which parameters the control expects.
+for exactly which parameters the control expects, or open
+[`model/example-rtt-kbus.json`](model/example-rtt-kbus.json) to see this
+step already done - this repo's own `Connection.Do`/`Di`/`Ao`/`Ai` bound to
+`DO_8ch_8`/`DI_8ch_1`/`AO_1`/`AI_1` on its WAGO 750-354 coupler.
 
 ### Step H - Watch the round trip in the TUI
 
