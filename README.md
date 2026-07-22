@@ -266,15 +266,26 @@ live numbers:
 Both charts: WAGO 750-354 coupler, 1ms EtherCAT Timer, ~13,000+ round
 trips per bar, zero stalls. Takeaways:
 
-- The **K-Bus scan cycle**, not EtherCAT frame rate or wire propagation,
-  sets the ~6ms floor - shortening the Timer period below that doesn't
-  help, and scan position (first vs. last channel) only adds a small
-  offset on top of it.
-- **Analog step** lands at the same floor as the digital round trip (same
-  scan mechanism).
-- **Analog gradual** settles in roughly half the time of a step. The scan
+- Wire propagation is sub-microsecond and not what limits this. The floor
+  comes from the coupler's K-Bus scan needing a roughly constant **number
+  of EtherCAT cycles** to flush (around 3-8, depending on the pair and
+  approach) - not, as an earlier version of this note claimed, a constant
+  wall-clock time independent of the Timer period. **That claim was wrong**:
+  tested at 15 ms instead of 1 ms on this same hardware, the digital round
+  trip cost ~4 cycles either way, but 4 cycles at 15 ms is ~60 ms wall
+  clock, not ~7 ms. Slowing the Timer down slows real hardware response
+  down too, roughly proportionally. Scan position (first vs. last channel)
+  only adds a small offset on top of the per-cycle floor, at either period.
+- **Analog step** lands at a similar per-cycle floor to the digital round
+  trip (same scan mechanism).
+- **Analog gradual** settles in roughly half the cycles of a step. The scan
   behaves like a pipeline: a step has to flush it from scratch, a ramp
   keeps it mostly full the whole way.
+
+Practical takeaway: don't raise the Timer period as a "free" way to cut
+CPU/network load on this kind of bus - it's a direct trade against real
+round-trip latency. Keep it as fast as your actual application needs, not
+as slow as the K-Bus can nominally tolerate.
 
 Required wiring: `DO_8ch_8` -> `DI_8ch_1`, `AO_1` -> `AI_1` (two physical
 loopbacks on the same coupler). Parameter bindings needed in the model -
