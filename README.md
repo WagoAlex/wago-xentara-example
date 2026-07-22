@@ -17,29 +17,42 @@ that they diverge, since only two of them touch a real EtherCAT bus.
 | App | Model file | Needs EtherCAT hardware? | What you get | Start at |
 |---|---|---|---|---|
 | **Xentara demo** | [`schemas/sample-model.json`](schemas/sample-model.json) | No | Synthetic waveforms (pulse, sine, ramp, noise) piped into a live debug inspector - confirms the runtime works before you touch any wiring. | [App 1](#app-1---xentara-demo-no-hardware) |
-| **WAGO RTT** | [`model/template-rtt.json`](model/template-rtt.json) | Yes | Your real I/O discovered and editable in the TUI, plus a live software cycle-time readout. | [App 2](#app-2---wago-rtt-ethercat--cycle-time) |
-| **WAGO RTT + K-Bus** | [`model/template-rtt-kbus.json`](model/template-rtt-kbus.json) | Yes, + 2 loopback wires | Everything App 2 has, plus a *verified hardware* round trip: a real digital and analog signal sent out and read back, timed for real. | [App 3](#app-3---wago-rtt--k-bus-verified-hardware-round-trip) |
+| **WAGO RTT** | [`model/template-rtt.json`](model/template-rtt.json) ⚠️ | Yes | Your real I/O discovered and editable in the TUI, plus a live software cycle-time readout. | [App 2](#app-2---wago-rtt-ethercat--cycle-time) |
+| **WAGO RTT + K-Bus** | [`model/template-rtt-kbus.json`](model/template-rtt-kbus.json) ⚠️ | Yes, + 2 loopback wires | Everything App 2 has, plus a *verified hardware* round trip: a real digital and analog signal sent out and read back, timed for real. | [App 3](#app-3---wago-rtt--k-bus-verified-hardware-round-trip) |
 
 > [!TIP]
 > First time here? Run App 1 first. It proves the container, licence, and
 > TUI all work before you involve any physical wiring - if something's wrong,
 > you'll know it's not the EtherCAT bus.
 
+> [!WARNING]
+> ⚠️ **Never open a `template-*.json` file directly** - not in the Xentara
+> Workbench, not by copying it straight to the device as `model.json`. Every
+> template is a *generator input*, not a Xentara model: it contains the
+> literal text `#CoE.Bus:EtherCAT Terminal` as a placeholder, which is
+> required syntax for `xentara-ethercat-model-file-generator` (see
+> [Xentara's own docs](https://docs.xentara.io/xentara-ethercat-driver/ethercat_driver_model_file_generator.html#ethercat_driver_model_file_generator_identifier))
+> but is **not valid Xentara model JSON** - opening it anywhere else fails
+> with "expected a JSON object" at that line, by design, every time. Apps 2
+> and 3 (Step C, below) always run the generator first; its **output** file
+> - never the template itself - is what you import, deploy, or open in
+> Workbench.
+
 ## Repo layout
 
 ```
 docker-compose.yml                 # the runtime stack (paste into Portainer)
 model/
-  template-minimal.json            # discover + edit I/O (no custom code)
-  template-rtt.json                # + live cycle-time metrics (App 2)
-  template-rtt-kbus.json           # + verified hardware round trip (App 3)
-  example-8di8do.json              # a complete hand-written model to learn from
+  template-minimal.json            # generator input only - see warning above (discover + edit I/O)
+  template-rtt.json                # generator input only - see warning above (+ live cycle-time metrics, App 2)
+  template-rtt-kbus.json           # generator input only - see warning above (+ verified hardware round trip, App 3)
+  example-8di8do.json              # a complete, valid, hand-written model to learn from or import as-is
   README.md
 control/
   ethercat-rtt-probe/               # C++ cycle-time probe (App 2)
   ethercat-kbus-rtt-probe/          # C++ cycle-time + hardware round-trip probe (App 3)
 schemas/
-  sample-model.json                # Xentara's own demo model (App 1)
+  sample-model.json                # Xentara's own demo model (App 1) - a real, directly-loadable model
   schema-xentara-*.json            # official JSON Schema files for validation
 scripts/
   rtt_websocket_test.py            # minimal WebSocket client, reads the RTT registers live
