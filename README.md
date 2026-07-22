@@ -2,8 +2,7 @@
 
 A first-time-user walkthrough for running [Xentara](https://www.xentara.io/)
 on a WAGO edge device - from `git clone` to a running application - doing
-almost everything in a **web browser**, with only a handful of typed
-commands.
+almost everything in a **web browser**.
 
 You don't need any prior Xentara knowledge. You do need an edge computer (or
 WAGO edge controller) running Docker. A WAGO EtherCAT coupler with at least
@@ -80,7 +79,7 @@ comments in the compose file.
 > under host networking. You reach Xentara through its console and TUI
 > (steps below).
 
-### Step 2 - License it (browser + one command)
+### Step 2 - License it (browser)
 
 Xentara is licensed per **node ID**. This is a condensed version of the
 licensing steps in the [Xentara on Docker: Quick Start](https://kb.xentara.io/articles/xentara-on-docker-quick-start-guide)
@@ -178,7 +177,7 @@ docker cp build-amd64/libEtherCATRttProbe.so \
 
 (Use the `build-arm64` output on ARM targets like the PFC300.)
 
-### Step C - Discover your I/O modules (one command)
+### Step C - Discover your I/O modules
 
 Xentara scans the live EtherCAT bus and writes the correct model for
 whatever terminals are actually present (tested against a WAGO 750-354
@@ -224,10 +223,10 @@ hand-writing addresses.
 
 Put the generated `model.json` where Xentara reads it and restart:
 
-- **No CLI:** use the **Xentara Workbench** (desktop GUI). Connect it to the
-  device (`<device-ip>`, port `8080`, user `xentara`, your password), import
-  the discovered bus, set free run, and **Deploy**.
-- **Minimal CLI:**
+- **Xentara Workbench** (desktop GUI): connect it to the device
+  (`<device-ip>`, port `8080`, user `xentara`, your password), import the
+  discovered bus, set free run, and **Deploy**.
+- **Or copy the file in directly:**
   ```bash
   docker cp ~/model/model.json \
     xentara-tryout:/home/xentara/.config/xentara/model.json
@@ -403,16 +402,6 @@ stays generic and I/O-free for any deployment that doesn't have a loopback
 available.
 
 ---
-
-## The only commands you type
-
-1. `xentara-licence-id` - get the node ID to activate.
-2. `xentara-ethercat-model-file-generator … -b <your-nic> -m online` -
-   discover your modules (Apps 2 and 3 only).
-3. `xentara-tui --host localhost --port 8080 --user xentara` - open the TUI.
-
-Plus `xentara-password` once, and a couple of `docker cp` / restart clicks.
-Everything else is WBM, Portainer, and the TUI/Workbench in a browser.
 
 ## Troubleshooting
 

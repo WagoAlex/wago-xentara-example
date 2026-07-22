@@ -7,11 +7,11 @@
         "name": "RTT",
         "UUID": "e8d349bb-a3eb-463c-ba7b-f946f1a8b8cd",
         "children": [
-          { "@Skill.SignalFlow.Register": { "name": "RttLastMs",      "UUID": "dcd274cb-3896-4283-961a-650bdd3a8e3b", "displayName": "Cycle time, last (ms)", "defaultValue": ["float64", 0.0] } },
-          { "@Skill.SignalFlow.Register": { "name": "RttMinMs",       "UUID": "33c48e92-7558-4b6e-bc35-f55482636a25", "displayName": "Cycle time, min (ms)",  "defaultValue": ["float64", 0.0] } },
-          { "@Skill.SignalFlow.Register": { "name": "RttMaxMs",       "UUID": "16c1f695-df8c-45bf-92d6-ad5915f06f40", "displayName": "Cycle time, max (ms)",  "defaultValue": ["float64", 0.0] } },
-          { "@Skill.SignalFlow.Register": { "name": "RttAvgMs",       "UUID": "7a100480-8013-4a76-854a-f687bab2734d", "displayName": "Cycle time, avg (ms)",  "defaultValue": ["float64", 0.0] } },
-          { "@Skill.SignalFlow.Register": { "name": "RttSampleCount", "UUID": "5c49304c-292f-4889-aa1a-200159accbed", "displayName": "Samples",               "defaultValue": ["uint64", 0] } }
+          { "@Skill.SignalFlow.Register": { "name": "RttLastMs", "UUID": "dcd274cb-3896-4283-961a-650bdd3a8e3b", "defaultValue": ["float64", 0.0] } },
+          { "@Skill.SignalFlow.Register": { "name": "RttMinMs", "UUID": "33c48e92-7558-4b6e-bc35-f55482636a25", "defaultValue": ["float64", 0.0] } },
+          { "@Skill.SignalFlow.Register": { "name": "RttMaxMs", "UUID": "16c1f695-df8c-45bf-92d6-ad5915f06f40", "defaultValue": ["float64", 0.0] } },
+          { "@Skill.SignalFlow.Register": { "name": "RttAvgMs", "UUID": "7a100480-8013-4a76-854a-f687bab2734d", "defaultValue": ["float64", 0.0] } },
+          { "@Skill.SignalFlow.Register": { "name": "RttSampleCount", "UUID": "5c49304c-292f-4889-aa1a-200159accbed", "defaultValue": ["uint64", 0] } }
         ]
       }
     },
