@@ -220,93 +220,50 @@ configured Timer period. That is a software/scheduling number, not a
 hardware one: it says nothing about how long a physical output actually
 takes to reach a physical input.
 
-`control/ethercat-kbus-rtt-probe/` adds that missing measurement. It keeps
-every `RTT.*` register from `EtherCATRttProbe` unchanged, and adds a
-digital round trip plus an analog one:
+`control/ethercat-kbus-rtt-probe/` adds that missing measurement: a real
+DO->DI round trip and a real AO->AI round trip, each gated on an actual
+connectivity check (`KbusConnected`/`AnalogConnected` only ever flip
+false -> true, on a real observed match, never on a timeout) so a missing
+wire reads as "not connected," never as a plausible-looking wrong number.
 
-- `RTT.KbusConnected` / `RTT.AnalogConnected` - **false** until a write to
-  `Do`/`Ao` has actually been observed on `Di`/`Ai`. This is a real
-  connectivity check, not an assumption, and it never gives up on a fixed
-  timeout: a K-Bus resync after a restart can legitimately take several
-  seconds, so these only ever flip false -> true, on the first real match,
-  and stay false (with the `*Cycle*`/`Analog*` registers at zero) for as
-  long as it takes. A wire that's genuinely missing or wrong just never
-  flips true, which reads as "not connected," never as a plausible-looking
-  wrong number.
-- `RTT.KbusCycleLastMs` / `MinMs` / `MaxMs` / `AvgMs` / `KbusSampleCount` -
-  once connected, the digital round trip: write `Do`, flip it once `Di`
-  reads back the written value.
-- `RTT.AnalogStepLastMs` / `MinMs` / `MaxMs` / `AvgMs` /
-  `AnalogStepSampleCount` - once connected, an **instant step** round trip
-  on `Ao`/`Ai`: jump `Ao` from 0 to 32760 in one cycle, time until `Ai`
-  reads back within tolerance.
-- `RTT.AnalogGradualLastMs` / `MinMs` / `MaxMs` / `AvgMs` /
-  `AnalogGradualSampleCount` - the same round trip, but approached by a
-  **gradual ramp** instead: `Ao` ramps back down from 32760 to 0 in fixed
-  steps, and the timer only starts once the ramp's commanded value reaches
-  0, i.e. this measures settling time after the ramp ends, the same
-  quantity as the step case, just preceded by a gradual approach.
+![Digital vs. analog step vs. analog gradual round-trip time, measured on real hardware](images/rtt-comparison.png)
 
-The analog tolerance and ramp step are calibrated against this hardware's
-own noise floor, not guessed: a real DAC-\>wire-\>ADC loopback never reads
-back bit-exact like a digital one does, and testing on this coupler found
-a steady-state noise/offset around 20-25 counts. The tolerance (40 counts)
-clears that floor; the ramp step (100 counts/cycle) clears the tolerance,
-so a still-ramping value can't trivially satisfy it before the ramp
-actually finishes. If you deploy this on different hardware, check your
-own noise floor before trusting these constants.
+![Digital round trip measured at three different K-Bus scan positions](images/rtt-scan-position.png)
 
-This requires two physical loopback wires (each output looped back into an
-input on the same coupler) and extra parameter bindings in the model:
+Both charts: WAGO 750-354 coupler, 1ms EtherCAT Timer, ~13,000+ round
+trips per bar, zero stalls. Takeaways:
 
-```json
-"parameters": {
-  "Do": "WagoIO.DO_8ch_8",
-  "Di": "WagoIO.DI_8ch_1",
-  "KbusConnected": "RTT.KbusConnected",
-  "KbusCycleLastMs": "RTT.KbusCycleLastMs",
-  "KbusCycleMinMs": "RTT.KbusCycleMinMs",
-  "KbusCycleMaxMs": "RTT.KbusCycleMaxMs",
-  "KbusCycleAvgMs": "RTT.KbusCycleAvgMs",
-  "KbusSampleCount": "RTT.KbusSampleCount",
-  "Ao": "WagoIO.AO_1",
-  "Ai": "WagoIO.AI_1",
-  "AnalogConnected": "RTT.AnalogConnected",
-  "AnalogStepLastMs": "RTT.AnalogStepLastMs",
-  "AnalogStepMinMs": "RTT.AnalogStepMinMs",
-  "AnalogStepMaxMs": "RTT.AnalogStepMaxMs",
-  "AnalogStepAvgMs": "RTT.AnalogStepAvgMs",
-  "AnalogStepSampleCount": "RTT.AnalogStepSampleCount",
-  "AnalogGradualLastMs": "RTT.AnalogGradualLastMs",
-  "AnalogGradualMinMs": "RTT.AnalogGradualMinMs",
-  "AnalogGradualMaxMs": "RTT.AnalogGradualMaxMs",
-  "AnalogGradualAvgMs": "RTT.AnalogGradualAvgMs",
-  "AnalogGradualSampleCount": "RTT.AnalogGradualSampleCount"
-}
-```
+- The **K-Bus scan cycle**, not EtherCAT frame rate or wire propagation,
+  sets the ~6ms floor - shortening the Timer period below that doesn't
+  help, and scan position (first vs. last channel) only adds a small
+  offset on top of it.
+- **Analog step** lands at the same floor as the digital round trip (same
+  scan mechanism).
+- **Analog gradual** settles in roughly half the time of a step. The scan
+  behaves like a pipeline: a step has to flush it from scratch, a ramp
+  keeps it mostly full the whole way.
 
-(plus the same `RttLastMs`/`RttMinMs`/`RttMaxMs`/`RttAvgMs`/`RttSampleCount`
-bindings `EtherCATRttProbe` already uses.) Because it requires that specific
-wiring, this is a separate control from `EtherCATRttProbe` rather than a
-change to it - `EtherCATRttProbe` stays generic and I/O-free for any
-deployment that doesn't have a loopback available.
+Required wiring: `DO_8ch_8` -> `DI_8ch_1`, `AO_1` -> `AI_1` (two physical
+loopbacks on the same coupler). Parameter bindings needed in the model -
+`Do`/`Di`/`Ao`/`Ai` plus one register per stat listed below - are in
+`control/ethercat-kbus-rtt-probe/src/EtherCATKbusRttProbe.cpp`.
 
-Measured on real hardware (750-354 coupler, ~50 channels across 2 AO/8DO/
-16DO/8DI/16DI modules):
+| Register group | Fields |
+|---|---|
+| `RTT.KbusConnected`, `RTT.KbusCycle*` | Digital DO8->DI1 round trip |
+| `RTT.AnalogConnected`, `RTT.AnalogStep*` | Analog instant-step round trip |
+| `RTT.AnalogGradual*` | Analog gradual-ramp round trip |
 
-- The digital K-Bus round trip lands around 6-8 ms and does not improve by
-  shortening the EtherCAT Timer period below that: the K-Bus scan cycle,
-  not EtherCAT frame rate or wire propagation, is what sets the floor.
-  Testing the same loopback pattern on both the first and the last channel
-  of the 16DO/16DI modules showed only a small (~0.2 ms) difference between
-  scan positions, well inside that same 6-8 ms floor.
-- The analog step round trip lands at the same ~6 ms floor as the digital
-  one, consistent with both going through the same K-Bus scan.
-- The analog gradual round trip lands around 3-4 ms, roughly half the step
-  figure. That's consistent with the K-Bus scan behaving like a pipeline: a
-  step has to flush that pipeline from scratch, while a gradual ramp keeps
-  it mostly full of near-final values the whole way, so only a partial
-  residual has to flush once the ramp stops.
+The analog tolerance (40 counts) and ramp step (100 counts/cycle) are
+calibrated against this hardware's measured noise floor (~20-25 counts), not
+guessed - a real DAC->wire->ADC loopback never reads back bit-exact like a
+digital one does. Check your own noise floor before reusing these constants
+on different hardware.
+
+This is a separate control from `EtherCATRttProbe` rather than a change to
+it, since it requires that specific wiring - `EtherCATRttProbe` stays
+generic and I/O-free for any deployment that doesn't have a loopback
+available.
 
 ## The only commands you type
 
