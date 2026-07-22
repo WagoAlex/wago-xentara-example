@@ -17,8 +17,8 @@ that they diverge, since only two of them touch a real EtherCAT bus.
 | App | Model file | Needs EtherCAT hardware? | What you get | Start at |
 |---|---|---|---|---|
 | **Xentara demo** | [`schemas/sample-model.json`](schemas/sample-model.json) | No | Synthetic waveforms (pulse, sine, ramp, noise) piped into a live debug inspector - confirms the runtime works before you touch any wiring. | [App 1](#app-1---xentara-demo-no-hardware) |
-| **WAGO RTT** | [`model/template-rtt.json`](model/template-rtt.json) ⚠️ | Yes | Your real I/O discovered and editable in the TUI, plus a live software cycle-time readout. | [App 2](#app-2---wago-rtt-ethercat--cycle-time) |
-| **WAGO RTT + K-Bus** | [`model/template-rtt-kbus.json`](model/template-rtt-kbus.json) ⚠️ | Yes, + 2 loopback wires | Everything App 2 has, plus a *verified hardware* round trip: a real digital and analog signal sent out and read back, timed for real. | [App 3](#app-3---wago-rtt--k-bus-verified-hardware-round-trip) |
+| **WAGO RTT** | [`model/template-rtt.json`](model/template-rtt.json) | Yes | Your real I/O discovered and editable in the TUI, plus a live software cycle-time readout. | [App 2](#app-2---wago-rtt-ethercat--cycle-time) |
+| **WAGO RTT + K-Bus** | [`model/template-rtt-kbus.json`](model/template-rtt-kbus.json) | Yes, + 2 loopback wires | Everything App 2 has, plus a *verified hardware* round trip: a real digital and analog signal sent out and read back, timed for real. | [App 3](#app-3---wago-rtt--k-bus-verified-hardware-round-trip) |
 
 > [!TIP]
 > First time here? Run App 1 first. It proves the container, licence, and
@@ -26,17 +26,16 @@ that they diverge, since only two of them touch a real EtherCAT bus.
 > you'll know it's not the EtherCAT bus.
 
 > [!WARNING]
-> ⚠️ **Never open a `template-*.json` file directly** - not in the Xentara
+> **Never open a `template-*.json` file directly** - not in the Xentara
 > Workbench, not by copying it straight to the device as `model.json`. Every
 > template is a *generator input*, not a Xentara model: it contains the
 > literal text `#CoE.Bus:EtherCAT Terminal` as a placeholder, which is
 > required syntax for `xentara-ethercat-model-file-generator` (see
 > [Xentara's own docs](https://docs.xentara.io/xentara-ethercat-driver/ethercat_driver_model_file_generator.html#ethercat_driver_model_file_generator_identifier))
-> but is **not valid Xentara model JSON** - opening it anywhere else fails
-> with "expected a JSON object" at that line, by design, every time. Apps 2
-> and 3 (Step C, below) always run the generator first; its **output** file
-> - never the template itself - is what you import, deploy, or open in
-> Workbench.
+> but isn't valid Xentara model JSON - opening it anywhere else fails with
+> "expected a JSON object" at that line, every time. Apps 2 and 3 (Step C,
+> below) always run the generator first; its output file, never the
+> template itself, is what you import, deploy, or open in Workbench.
 
 ## Repo layout
 

@@ -6,23 +6,23 @@ all running the bus by pairing a 1 ms `@Timer` with a `@Pipeline` that calls
 I/O with the coupler - plus Xentara's own hardware-free demo.
 
 > [!WARNING]
-> ⚠️ **`template-minimal.json`, `template-rtt.json`, and
-> `template-rtt-kbus.json` are not Xentara models - don't open them in the
-> Workbench or copy them to the device as `model.json`.** Each one is
-> *input* to `xentara-ethercat-model-file-generator`: it contains the literal
-> text `#CoE.Bus:EtherCAT Terminal`, which is required generator syntax (see
+> **`template-minimal.json`, `template-rtt.json`, and `template-rtt-kbus.json`
+> are not Xentara models** - don't open them in the Workbench or copy them
+> to the device as `model.json`. Each one is *input* to
+> `xentara-ethercat-model-file-generator`: it contains the literal text
+> `#CoE.Bus:EtherCAT Terminal`, which is required generator syntax (see
 > [the generator's identifier syntax docs](https://docs.xentara.io/xentara-ethercat-driver/ethercat_driver_model_file_generator.html#ethercat_driver_model_file_generator_identifier))
-> but is **not valid JSON per the Xentara model schema** - a string where an
+> but isn't valid JSON per the Xentara model schema - a string where an
 > object is expected. Opening one directly always fails with "expected a
 > JSON object" at that line; that's not a bug, it's what an unprocessed
-> template looks like. Run the generator first (`../README.md`, Step C); its
-> **output** file is the real, importable model.
+> template looks like. Run the generator first (`../README.md`, Step C) and
+> use its output file, which is the real, importable model.
 
 | File | Use it when | Custom C++ needed? | Importable as-is? |
 |---|---|---|---|
-| `template-minimal.json` | **Start here.** You want to discover your real bus and edit I/O in the TUI, nothing more. | No | ⚠️ No - generator input only |
-| `template-rtt.json` | You also want live cycle-time (RTT) numbers. | Yes - `control/ethercat-rtt-probe` | ⚠️ No - generator input only |
-| `template-rtt-kbus.json` | You also want a *verified hardware* round trip (real DO->DI and AO->AI, not just cycle time), and have two loopback wires spare. | Yes - `control/ethercat-kbus-rtt-probe` | ⚠️ No - generator input only |
+| `template-minimal.json` | **Start here.** You want to discover your real bus and edit I/O in the TUI, nothing more. | No | No - generator input only |
+| `template-rtt.json` | You also want live cycle-time (RTT) numbers. | Yes - `control/ethercat-rtt-probe` | No - generator input only |
+| `template-rtt-kbus.json` | You also want a *verified hardware* round trip (real DO->DI and AO->AI, not just cycle time), and have two loopback wires spare. | Yes - `control/ethercat-kbus-rtt-probe` | No - generator input only |
 | `example-8di8do.json` | Reference: a complete, hand-written model for one coupler + one 8DI/8DO module, to read and learn from. | No | Yes |
 
 No EtherCAT hardware yet? `../schemas/sample-model.json` is Xentara's own

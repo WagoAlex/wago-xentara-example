@@ -5,7 +5,7 @@ publishes it as live values. It touches **no I/O**, so every output stays free
 for you to edit in the TUI - the probe just tells you how fast the bus is
 actually cycling.
 
-You only need this if you want RTT numbers. The core "discover → edit I/O in
+You only need this if you want RTT numbers. The core "discover -> edit I/O in
 the TUI" journey in the top-level `README.md` needs no custom control at all.
 
 ## What it publishes
