@@ -4,6 +4,44 @@
 device, end to end, doing almost everything in a **web browser**. No prior
 Xentara knowledge needed.
 
+## Table of contents
+
+- [Prerequisites](#prerequisites)
+- [Two tracks, one shared setup](#two-tracks-one-shared-setup)
+- [Choose your app](#choose-your-app)
+- [Repo layout](#repo-layout)
+- [Deployment workflow overview](#deployment-workflow-overview)
+- [Shared setup (every app starts here)](#shared-setup-every-app-starts-here)
+  - [Step 0 - Clone this repo](#step-0---clone-this-repo)
+  - [Step 1 - Download + deploy the runtime](#step-1---download--deploy-the-runtime-browser)
+  - [Opening the container console](#opening-the-container-console)
+  - [Step 2 - License it](#step-2---license-it-browser)
+- [App 1 - Xentara demo (no hardware)](#app-1---xentara-demo-no-hardware)
+  - [Load the model](#load-the-model)
+  - [Watch it run](#watch-it-run)
+- [App 2 - WAGO RTT (EtherCAT + cycle time)](#app-2---wago-rtt-ethercat--cycle-time)
+  - [Step A - Network the EtherCAT NIC](#step-a---network-the-ethercat-nic-browser)
+  - [Step B - Build and deploy the RTT probe](#step-b---build-and-deploy-the-rtt-probe)
+  - [Step C - Discover your I/O modules](#step-c---discover-your-io-modules)
+  - [Step D - Load the model](#step-d---load-the-model)
+  - [Step E - Open the TUI and write an output](#step-e---open-the-tui-and-write-an-output-browser)
+- [Blueprint - build your own C++ and EtherCAT control](#blueprint---build-your-own-c-and-ethercat-control)
+  - [Run the smallest working example first](#run-the-smallest-working-example-first)
+  - [1. Anatomy of a control](#1-anatomy-of-a-control)
+  - [2. Project skeleton](#2-project-skeleton)
+  - [3. Declare and bind your data points](#3-declare-and-bind-your-data-points)
+  - [4. Schedule it](#4-schedule-it)
+  - [5. Deploy and iterate](#5-deploy-and-iterate)
+- [App 3 - WAGO RTT + K-Bus (verified hardware round trip)](#app-3---wago-rtt--k-bus-verified-hardware-round-trip)
+  - [Step F - Wire the loopback](#step-f---wire-the-loopback)
+  - [Step G - Bind the wired channels](#step-g---bind-the-wired-channels)
+  - [Step H - Watch the round trip in the TUI](#step-h---watch-the-round-trip-in-the-tui)
+- [Troubleshooting](#troubleshooting)
+- [Validated](#validated)
+- [Deployment workflow (detailed reference)](#deployment-workflow-detailed-reference)
+- [References](#references)
+- [License](#license)
+
 ## Prerequisites
 
 Before you start, make sure you have:
@@ -77,10 +115,12 @@ model/
   example-rtt.json                 # template-rtt.json's real generator output, importable as-is (App 2)
   example-rtt-kbus.json            # template-rtt-kbus.json's real generator output, importable as-is (App 3)
   example-8di8do.json              # a complete, hand-written model for one WAGO 750-1506 (8DI/8DO) module
+  example-blueprint.json           # minimal no-hardware model for the Blueprint control below
   README.md
 control/
   ethercat-rtt-probe/               # C++ cycle-time probe (App 2)
   ethercat-kbus-rtt-probe/          # C++ cycle-time + hardware round-trip probe (App 3)
+  blueprint-example/                # minimal reference control for the Blueprint section
 schemas/
   sample-model.json                # Xentara's own demo model (App 1) - a real, directly-loadable model
   schema-xentara-*.json            # official JSON Schema files for validation
@@ -431,7 +471,22 @@ recipe for writing your **own** control from scratch - App 3 is a second,
 more advanced worked example of the same recipe, so read this first if
 you're about to write custom logic rather than just wire loopbacks.
 
-Two references to copy from, depending on what your control needs to do:
+### Run the smallest working example first
+
+[`control/blueprint-example/`](control/blueprint-example/) is the reference
+implementation of everything below: one input, two outputs, no hardware, no
+discovery step. Build and deploy it the same way as
+[Step B](#step-b---build-and-deploy-the-rtt-probe), then load
+[`model/example-blueprint.json`](model/example-blueprint.json) directly (it's
+a complete model, not a template) and open it in the TUI or connect Xentara
+Workbench to browse it - the `Registers` and `Control` groups below map
+one-to-one onto the code walked through in this section.
+
+<!-- Add your Xentara Workbench screenshots of model/example-blueprint.json here,
+     e.g. ![The blueprint model's Registers and Control groups in Xentara Workbench](images/workbench-blueprint-overview.png) -->
+
+Two references to copy from once you're past the minimal example, depending
+on what your control needs to do:
 
 | Copy this if your control... | Reference |
 |---|---|

@@ -1,0 +1,62 @@
+{
+  "$schema": "https://docs.xentara.io/xentara/schema-xentara-model.json",
+  "children": [
+    {
+      "@Group": {
+        "name": "Registers",
+        "UUID": "fb78f3ba-9dbf-4e2d-bcc0-f4bb8be564dc",
+        "children": [
+          { "@Skill.SignalFlow.Register": { "name": "Enable", "UUID": "01e12bda-9cd1-4c89-a5ab-5551e501892d", "defaultValue": ["bool", false] } },
+          { "@Skill.SignalFlow.Register": { "name": "Counter", "UUID": "be9c3bfe-74df-4537-a2ea-834ca56626a8", "defaultValue": ["uint64", 0] } },
+          { "@Skill.SignalFlow.Register": { "name": "Active", "UUID": "7f512fe0-1051-4843-a881-742fae905df9", "defaultValue": ["bool", false] } }
+        ]
+      }
+    },
+    {
+      "@Group": {
+        "name": "Control",
+        "UUID": "0a6d8f7a-c205-4640-b798-cf0561af4e9e",
+        "children": [
+          {
+            "@Skill.CPP.Control": {
+              "name": "BlueprintExample",
+              "UUID": "3afa07ff-422f-46f6-8e26-4d10754f71f9",
+              "controlPath": "BlueprintExample.so",
+              "parameters": {
+                "Enable": "Registers.Enable",
+                "Counter": "Registers.Counter",
+                "Active": "Registers.Active"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "@Track": {
+        "name": "Blueprint Track",
+        "UUID": "9d32a9a5-9108-4434-b5e9-59eecf459ea5",
+        "children": [
+          { "@Timer": { "name": "1s Timer", "UUID": "5e2e4b6a-2f43-4b0a-9b7a-2f4f7b6e5a1c", "period": "1s" } },
+          {
+            "@Pipeline": {
+              "name": "Pipeline",
+              "UUID": "c1d7a2f5-6b3e-4a8c-9d1f-3e7a5b2c4d69",
+              "triggers": [ "Blueprint Track.1s Timer.expired" ],
+              "checkpoints": [ {}, {} ],
+              "segments": [
+                {
+                  "start": 0,
+                  "end": 1,
+                  "tasks": [
+                    { "function": "Control.BlueprintExample.step" }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
