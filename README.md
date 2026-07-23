@@ -558,10 +558,10 @@ follow the legend to jump to the exact instructions for any node.
 }}}%%
 flowchart TB
     subgraph Setup["Shared setup - every app starts here"]
-        direction LR
-        S0("Step 0<br/>Clone this repo")
-        S1("Step 1<br/>Deploy the runtime stack<br/>(Portainer)")
-        S2("Step 2<br/>Licence it<br/>(node ID, restart)")
+        direction TB
+        S0("Step 0: clone the repo<br/>git clone https://github.com/WagoAlex/wago-xentara-example.git<br/>cd wago-xentara-example")
+        S1("Step 1: deploy the stack<br/>Portainer → Stacks → Add stack → Web editor<br/>paste docker-compose.yml → Deploy the stack")
+        S2("Step 2: license it<br/>Console: xentara-licence-id<br/>activate node ID at customerportal.xentara.io<br/>Restart → Logs: 'Model uses N of … data points'")
         S0 --> S1 --> S2
     end
 
@@ -570,9 +570,9 @@ flowchart TB
     Track -- "No" --> App1
 
     subgraph App1["App 1 - Xentara example, no hardware"]
-        direction LR
-        A1("Load the model<br/>sample-model.json")
-        A2("Watch it run<br/>TUI, live waveforms")
+        direction TB
+        A1("Load the model<br/>docker cp schemas/sample-model.json<br/>xentara-tryout:/home/xentara/.config/xentara/model.json<br/>Restart → Logs: 'Using model file …'")
+        A2("Watch it run<br/>xentara-tui --host localhost --port 8080 --user xentara<br/>browse Signals: Pulse, Sine Wave, Triangle, Noise, …")
         A1 --> A2
     end
 
@@ -581,34 +581,38 @@ flowchart TB
     Reuse -- "No - first time" --> App2Build
     Reuse -- "Yes - reuse them" --> FastPath
 
-    subgraph App2Build["App 2 - WAGO RTT (build path)"]
+    subgraph App2Build["App 2 - WAGO RTT: control/ethercat-rtt-probe/"]
         direction TB
-        BA("Step A<br/>Network the EtherCAT NIC")
-        BB("Step B<br/>Build + deploy the RTT probe")
-        BC("Step C<br/>Discover I/O modules<br/>template-*.json → model.json")
-        BD("Step D<br/>Load the model")
-        BE("Step E<br/>Open the TUI, write an output")
+        BA("Step A: network the NIC<br/>device WBM → Networking/TCP-IP<br/>EtherCAT port: no IPv4, note interface name (e.g. X11)")
+        BB("Step B: build + copy the probe<br/>build → libEtherCATRttProbe.so<br/>docker cp build-amd64/libEtherCATRttProbe.so<br/>xentara-tryout:/home/xentara/.config/xentara/control/EtherCATRttProbe.so")
+        BC("Step C: discover I/O<br/>docker stop xentara-tryout<br/>xentara-ethercat-model-file-generator<br/>-i template-rtt.json -o model.json -b your-nic -m online<br/>docker start xentara-tryout")
+        BD("Step D: load the model<br/>docker cp model.json<br/>xentara-tryout:/home/xentara/.config/xentara/model.json<br/>Restart → Logs: 'Using model file …'")
+        BE("Step E: open the TUI<br/>xentara-tui --host localhost --port 8080 --user xentara<br/>browse WagoIO, write true/false, watch RTT.RttAvgMs")
         BA --> BB --> BC --> BD --> BE
     end
 
     subgraph FastPath["Existing-app fast path"]
         direction TB
-        FA("Reuse existing .so + model.json<br/>skip Steps A - D")
+        FA("Reuse the .so + model.json<br/>e.g. model/example-rtt.json<br/>docker cp both files in as above → Restart<br/>skip Steps A - D entirely")
     end
 
     App2Build --> App2Done{"Add verified hardware<br/>round trip?"}
     FastPath --> App2Done
 
     App2Done -- "No" --> Done("Done - App 2 running")
-    App2Done -- "Yes, wire loopback" --> App3
+    App2Done -- "Yes, wire loopback" --> App3Prep
+
+    App3Prep("Redo Steps A - E with<br/>model/template-rtt-kbus.json and<br/>control/ethercat-kbus-rtt-probe/")
 
     subgraph App3["App 3 - WAGO RTT + K-Bus"]
         direction TB
-        CF("Step F<br/>Wire the loopback<br/>DO to DI, AO to AI")
-        CG("Step G<br/>Bind the wired channels")
-        CH("Step H<br/>Watch the round trip in the TUI")
+        CF("Step F: wire the loopback<br/>e.g. DO_8ch_8 → DI_8ch_1<br/>e.g. AO_1 → AI_1")
+        CG("Step G: bind wired channels<br/>set Connection.Do / Di / Ao / Ai<br/>io fields to the two channels wired above")
+        CH("Step H: watch the round trip<br/>browse RTT.KbusCycleAvgMs,<br/>RTT.AnalogStep*, RTT.AnalogGradual*")
         CF --> CG --> CH
     end
+
+    App3Prep --> CF
 ```
 
 | Node | Jump to |
@@ -629,11 +633,17 @@ flowchart TB
 
 - **Steps 0-2** are one-time per device; App 1 needs nothing past Step 2.
 - **Steps A-D** only need re-running when the physical terminal row changes
-  (rediscover) or the control logic changes (rebuild).
+  (rediscover) or the control logic changes (rebuild). The full generator
+  command (`-n "EtherCAT Terminal" -v`, etc.) is in
+  [Step C](#step-c---discover-your-io-modules).
 - **Existing-app fast path**: redeploying a control you already built and a
   `model.json` you already have (e.g.
   [`model/example-rtt.json`](model/example-rtt.json)) skips Steps A-D
   entirely - copy the `.so` and the model in, restart, done.
+- **App 3** reuses Steps A-E of App 2 verbatim, just swapping in
+  [`model/template-rtt-kbus.json`](model/template-rtt-kbus.json) and
+  [`control/ethercat-kbus-rtt-probe/`](control/ethercat-kbus-rtt-probe/)
+  for the RTT-only template and probe, before Steps F-H.
 
 ## References
 
