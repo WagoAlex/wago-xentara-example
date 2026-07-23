@@ -299,11 +299,15 @@ file …` and no errors.
 xentara-tui --host localhost --port 8080 --user xentara
 ```
 
+![The App 1 model tree in the TUI: Sampler, Sampler Track, and the Signals group](images/tui-app1.png)
+
 Navigate to the `Signals` group and watch `Pulse`, `Sine Wave`, `Triangle`,
 `Saw-Tooth`, `Inverted Saw-Tooth`, and `Noise` update live, each on its own
 waveform and period. The model also runs a `Debugging.Inspector` that dumps
 every signal's value, quality, and timestamps to the container logs once per
 cycle - `docker logs xentara-tryout` shows the same data outside the TUI.
+
+![Browsing Sampler.Sine Wave live in the TUI, value 56.421379 and updating](images/tui-app1-sine.png)
 
 That's the whole app. Move on to App 2 or 3 when you have EtherCAT hardware
 to wire up.
@@ -813,6 +817,8 @@ pointed at it (see that repo's own Quick Start) so it's publishing to
 Xentara only reads the `detections` array (see Step L) - it ignores
 `timestamp`, `fps`, `confidence`, and `box` entirely.
 
+![Real detection JSON streaming from wago-hailo-example over MQTT: timestamp, fps, and a detections array with class, confidence, and box for each frame](images/app4-inference-logs.png)
+
 > [!IMPORTANT]
 > wago-hailo-example's real class labels are `"blue helmet"`, `"head"`,
 > `"red helmet"`, `"white helmet"`, `"yellow helmet"` (from its own
@@ -897,6 +903,8 @@ broker connection every 5s, independently of the 1ms EtherCAT track - the
 same two-tracks-at-different-speeds pattern App 2's cycle-time track uses,
 just applied to a slower, non-real-time concern.
 
+![Native xentara-debugger reading Registers.MQTT-Payload (a live white helmet + head detection) and Connection.DO1-White / DO2-Blue / DO3-Head reacting correctly](images/native-xentara-debugger-app4.png)
+
 > [!TIP]
 > No hardware feed handy? Publish a test message by hand and watch the
 > outputs react:
@@ -906,6 +914,8 @@ just applied to a slower, non-real-time concern.
 > ```
 
 ### Confirmed on real hardware
+
+![The full pipeline, physically: the WAGO coupler's three indicator lamps (labelled Head / Blue Helmet / White Helmet), wired to Connection.DO3-Head/DO2-Blue/DO1-White, next to the camera feed wago-hailo-example is detecting from - live bounding boxes read "head: 91.4%" and "white helmet: 97.9%"](images/app4-inference-ui.png)
 
 Confirmed end to end against a live camera feed on real WAGO 750-354
 hardware: genuine `"white helmet"` and `"head"` detections correctly set
