@@ -26,27 +26,26 @@ guide. Each app has its own page under [`docs/`](docs/).
 
 ## Prerequisites
 
-Before you start, make sure you have:
+**Every app** needs a device running **Docker** with **Portainer**
+installed and reachable at `https://<device-ip>:9443/`. Portainer runs on
+any edge computer - this guide deploys *into* it, it doesn't install it.
+That is the whole requirement for the Xentara track (App 1).
 
-- An edge computer or WAGO edge controller running **Docker**.
-- **Portainer** already installed on that device and reachable in your
-  browser at `https://<device-ip>:9443/`. This guide deploys *into*
-  Portainer - it doesn't install Portainer itself.
-- A WAGO EtherCAT coupler with at least one I/O terminal - **only** if you
-  want the WAGO track below (App 2 / App 3 / App 4). The Xentara track
-  (App 1) needs no hardware at all.
+**The WAGO track (App 2 / App 3 / App 4)** also needs WAGO hardware:
+
+- A WAGO edge device (a 752-9xxx-class controller) with a WAGO EtherCAT
+  coupler (e.g. a 750-354) and at least one I/O terminal.
 
   ![The hardware this repo's own measurements were taken on: a WAGO 752-9813 edge computer next to a 750-354 EtherCAT coupler with a mixed terminal row (750-1405, 750-1504, 750-1506, 750-467, 750-550, 750-600, 750-614)](images/wago-hw.png)
-- An MQTT broker (e.g. Mosquitto) and a running instance of
+- **App 3** also: two loopback wires (a spare DO->DI and a spare AO->AI).
+- **App 4** also: an MQTT broker (e.g. Mosquitto) and a running
   [wago-hailo-example](https://github.com/WagoAlex/wago-hailo-example)
-  publishing to `inference/yolov5m-results` - **only** if you want App 4's
-  AI-driven outputs.
-- **App 4 specifically also needs a native Xentara install** (not the
-  `xentara-tryout` Docker container Apps 1-3 use) with
-  `xentara-mqtt-client >= 2.0+2.2` - check with
-  `dpkg -l | grep xentara-mqtt-client` on the device. The native install
-  and any Docker container both want exclusive use of the EtherCAT NIC, so
-  only one of "Apps 1-3" or "App 4" can run at a time.
+  publishing to `inference/yolov5m-results`, plus a **native Xentara
+  install** (not the `xentara-tryout` Docker container Apps 1-3 use) with
+  `xentara-mqtt-client >= 2.0+2.2` (check via
+  `dpkg -l | grep xentara-mqtt-client`). The native install and any Docker
+  container both want exclusive use of the EtherCAT NIC, so only one of
+  "Apps 1-3" or "App 4" can run at a time.
 
 ## Two tracks, one shared setup
 
@@ -73,16 +72,16 @@ touch hardware. App 4 reuses App 2's coupler but replaces loopback wiring
 and TUI writes with a real external system: three outputs driven by an AI
 detection feed over MQTT instead.
 
-This table is the single source of truth for how each app maps to its guide,
-its C++ control, its model file, and the licence skills it needs.
+Each app maps to one guide, one C++ control, one model file, and a set of
+licence skills. The linked guide carries the full walkthrough.
 
-| App / guide | Control (`control/`) | Model file (`model/`) | EtherCAT hardware | Loopback wiring | Licence skills | What you get |
-|---|---|---|---|---|---|---|
-| **App 1** - [Xentara demo](docs/app-demo.md) | *(none)* | [`schemas/sample-model.json`](schemas/sample-model.json) | Not needed | Not needed | Base runtime only | Synthetic waveforms (pulse, sine, ramp, noise) piped into a live debug inspector - confirms the runtime and licence work before you touch any wiring. |
-| **App 2** - [WAGO RTT](docs/app-rtt.md) | [`ethercat-rtt-probe/`](control/ethercat-rtt-probe/) | [`template-rtt.json`](model/template-rtt.json) | Required (coupler on the wire) | Not needed | `CoE` (EtherCAT) + `CPP` (C++ control) | Your real I/O discovered and editable in the TUI, plus a live software cycle-time readout. A separate model from App 1, not an extension of it. |
-| **App 3** - [WAGO RTT + K-Bus](docs/app-rtt-kbus.md) | [`ethercat-kbus-rtt-probe/`](control/ethercat-kbus-rtt-probe/) | [`template-rtt-kbus.json`](model/template-rtt-kbus.json) | Required (same as App 2) | Required (2 loopback wires) | Same as App 2 - no extra skill | Everything in App 2, plus a *verified hardware* round trip: a real digital and analog signal sent out and read back, timed for real. |
-| **App 4** - [MQTT Payload Control](docs/app-mqtt-payload-control.md) | [`mqtt-payload-control/`](control/mqtt-payload-control/) | [`template-mqtt-payload-control.json`](model/template-mqtt-payload-control.json) | Required (same coupler, 3 spare DO channels) | Not needed | `CoE` + `CPP` + `MQTT` (`>= 2.0+2.2`, native install only - not `xentara-tryout`) | Real AI detections from [wago-hailo-example](https://github.com/WagoAlex/wago-hailo-example)'s Hailo-8 helmet detector drive three physical outputs live - the only app here reacting to an external system instead of a loopback or a TUI write. |
-| **Blueprint** - [build your own control](docs/blueprint.md) | [`blueprint-example/`](control/blueprint-example/) | [`example-blueprint.json`](model/example-blueprint.json) | Not needed | Not needed | Base runtime only | A minimal, no-hardware reference control (one input, two outputs) and a step-by-step recipe for writing your own. |
+| App / guide | Control (`control/`) | Model (`model/`) | Hardware | Licence | What it is |
+|---|---|---|---|---|---|
+| **App 1** - [Xentara demo](docs/app-demo.md) | *(none)* | [`sample-model.json`](schemas/sample-model.json) | None | Base | Runtime + TUI smoke test: six synthetic waveforms in a live inspector. **Start here.** |
+| **App 2** - [WAGO RTT](docs/app-rtt.md) | [`ethercat-rtt-probe/`](control/ethercat-rtt-probe/) | [`template-rtt.json`](model/template-rtt.json) | EtherCAT coupler | `CoE` + `CPP` | Your real I/O discovered and editable in the TUI, plus a live cycle-time readout. |
+| **App 3** - [WAGO RTT + K-Bus](docs/app-rtt-kbus.md) | [`ethercat-kbus-rtt-probe/`](control/ethercat-kbus-rtt-probe/) | [`template-rtt-kbus.json`](model/template-rtt-kbus.json) | Coupler + 2 loopback wires | `CoE` + `CPP` | App 2 plus a verified, timed hardware round trip (digital + analog). |
+| **App 4** - [MQTT Payload Control](docs/app-mqtt-payload-control.md) | [`mqtt-payload-control/`](control/mqtt-payload-control/) | [`template-mqtt-payload-control.json`](model/template-mqtt-payload-control.json) | Coupler + MQTT feed, native install | `CoE` + `CPP` + `MQTT` | Three physical outputs driven live by an AI detection feed over MQTT. |
+| **Blueprint** - [build your own](docs/blueprint.md) | [`blueprint-example/`](control/blueprint-example/) | [`example-blueprint.json`](model/example-blueprint.json) | None | Base | A minimal no-hardware control plus a recipe for writing your own. |
 
 `CoE`, `CPP`, and `MQTT` are the licence skill names as they appear in your
 `licences.json`'s `skills` array - check yours covers what you need (`CoE` +
