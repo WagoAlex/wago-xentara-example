@@ -485,6 +485,13 @@ one-to-one onto the code walked through in this section.
 <!-- Add your Xentara Workbench screenshots of model/example-blueprint.json here,
      e.g. ![The blueprint model's Registers and Control groups in Xentara Workbench](images/workbench-blueprint-overview.png) -->
 
+> [!NOTE]
+> **Validated:** built cleanly against the Xentara build image, loaded with
+> no errors, and confirmed stepping once a second - writing
+> `Registers.Enable = true` was followed by `Registers.Counter` incrementing
+> by exactly one per elapsed second and `Registers.Active` mirroring `Enable`,
+> checked directly with `xentara-debugger`.
+
 Two references to copy from once you're past the minimal example, depending
 on what your control needs to do:
 
