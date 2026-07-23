@@ -13,8 +13,8 @@ see [Validated](#validated) below.
 > 2.0+2.2`. As of this writing, the `xentara/xentara-tryout:latest` image
 > ships `2.0+2.1`, which doesn't have it - the model fails to load in that
 > container at all. Every other app in this repo uses the Docker container;
-> this one is the exception. See the top-level README's
-> [App 4](../../README.md#app-4---mqtt-payload-control-ai-driven-outputs)
+> this one is the exception. See the
+> [App 4 guide](../../docs/app-mqtt-payload-control.md)
 > for the full walkthrough, including why.
 
 ## What it does
@@ -75,7 +75,7 @@ Xentara instance's directories, not a Docker container's:
 2. **Don't hand-load the committed `model/example-mqtt-payload-control.json`
    as-is on different hardware** - its EtherCAT addresses are baked in from
    this repo's own coupler's physical row. Regenerate it for your row first;
-   see [Step K in the top-level README](../../README.md#step-k---discover-your-io-modules)
+   see [Step K in the App 4 guide](../../docs/app-mqtt-payload-control.md#step-k---discover-your-io-modules)
    for the discovery command, using
    [`model/template-mqtt-payload-control.json`](../../model/template-mqtt-payload-control.json).
 3. Copy the freshly generated `model.json` in and restart the service:

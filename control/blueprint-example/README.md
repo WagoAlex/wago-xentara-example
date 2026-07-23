@@ -1,8 +1,7 @@
 # blueprint-example
 
 The smallest complete Xentara C++ control - the reference implementation for
-the [Blueprint](../../README.md#blueprint---build-your-own-c-and-ethercat-control)
-section of the top-level `README.md`. Touches **no I/O**, needs **no
+the [Blueprint guide](../../docs/blueprint.md). Touches **no I/O**, needs **no
 hardware**, and needs **no discovery step** - it exists purely to show the
 initialize()/step() pattern, data point binding, and pipeline wiring that
 every custom control follows, in isolation from EtherCAT specifics.
