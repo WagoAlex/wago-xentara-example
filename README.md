@@ -71,6 +71,84 @@ scripts/
 
 ---
 
+## Deployment workflow (Portainer)
+
+The full path from an empty device to a running control app - and the
+shortcut once you already have a compiled `.so` from a previous run.
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': {
+  'primaryColor':'#1F2837',
+  'primaryTextColor':'#ffffff',
+  'primaryBorderColor':'#6EC800',
+  'lineColor':'#6EC800',
+  'secondaryColor':'#EFF0F1',
+  'secondaryTextColor':'#1F2837',
+  'secondaryBorderColor':'#A5A8AF',
+  'tertiaryColor':'#FFFFFF',
+  'tertiaryTextColor':'#1F2837',
+  'tertiaryBorderColor':'#DEDFE1',
+  'fontFamily':'Segoe UI, Helvetica, Arial, sans-serif',
+  'clusterBkg':'#EFF0F1',
+  'clusterBorder':'#A5A8AF',
+  'edgeLabelBackground':'#1F2837'
+}}}%%
+flowchart TB
+    subgraph Setup["Shared setup - every app starts here"]
+        direction LR
+        S0("Step 0<br/>git clone repo")
+        S1("Step 1<br/>Portainer: paste docker-compose.yml<br/>Deploy stack")
+        S2("Step 2<br/>Licence node ID<br/>at customerportal.xentara.io<br/>restart container")
+        S0 --> S1 --> S2
+    end
+
+    S2 --> Decide{"Do you already have<br/>a built .so control module?"}
+
+    Decide -- "No - first time" --> Build
+    Decide -- "Yes - reuse it" --> Skip
+
+    subgraph Build["Build path (App 2 / App 3)"]
+        direction TB
+        BA("Step A<br/>Network the EtherCAT NIC<br/>(WBM, no IP on that port)")
+        BB("Step B<br/>Write / edit the C++ control app<br/>(control/*-probe)")
+        BC("Step C<br/>Compile it<br/>cmake --build → libX.so")
+        BD("Step D<br/>Discover I/O on the live bus<br/>xentara-ethercat-model-file-generator<br/>template-*.json → model.json")
+        BA --> BB --> BC --> BD
+    end
+
+    subgraph Skip["Existing-app fast path"]
+        direction TB
+        XA("Reuse the already-built .so<br/>and an existing model.json<br/>skip B and C entirely")
+    end
+
+    Build --> Deploy
+    Skip --> Deploy
+
+    subgraph Deploy["Deploy to the device"]
+        direction LR
+        DA("docker cp *.so →<br/>.config/xentara/control/")
+        DB("docker cp model.json →<br/>.config/xentara/model.json")
+        DC("Restart container<br/>in Portainer")
+        DA --> DB --> DC
+    end
+
+    Deploy --> Verify("Check Logs for<br/>'Using model file …'<br/>no errors")
+    Verify --> Run("Open the TUI<br/>xentara-tui --host localhost --port 8080<br/>watch I/O live, write outputs")
+```
+
+- **Steps 0-2** are one-time per device and shared by every app (App 1 stops
+  after Step 2, since it needs no hardware and no control module).
+- **Steps A-D** are only needed the first time, or whenever the physical
+  terminal row changes (discovery must re-run) or the control logic changes
+  (recompile must re-run).
+- **Existing-app fast path**: if you're redeploying a control you already
+  built and a `model.json` you already have (e.g. reusing
+  [`model/example-rtt.json`](model/example-rtt.json) or a previous build's
+  `.so`), skip straight to **Deploy** - no NIC reconfiguration, no rewrite,
+  no recompile, no rediscovery.
+
+---
+
 ## Shared setup (every app starts here)
 
 ### Step 0 - Clone this repo
