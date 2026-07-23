@@ -27,6 +27,9 @@ Every app starts with the same three steps (clone, deploy, license) in
 [Shared setup](#shared-setup-every-app-starts-here). From there, pick your
 track and follow the matching app below. For the shape of the whole process
 at a glance, see [Deployment workflow overview](#deployment-workflow-overview).
+Writing your own control instead of just running these examples? Do App 2
+first, then see
+[Blueprint - build your own C++ and EtherCAT control](#blueprint---build-your-own-c-and-ethercat-control).
 
 ## Choose your app
 
@@ -417,6 +420,157 @@ For that, see App 3.
 ![Browsing the 1ms Timer that drives the EtherCAT control track](images/tui-variabl-track-time.png)
 
 That's the whole app.
+
+---
+
+## Blueprint - build your own C++ and EtherCAT control
+
+You've now deployed and run a real control module (`EtherCATRttProbe`) and
+seen how it's wired into the model. This section generalizes that into a
+recipe for writing your **own** control from scratch - App 3 is a second,
+more advanced worked example of the same recipe, so read this first if
+you're about to write custom logic rather than just wire loopbacks.
+
+Two references to copy from, depending on what your control needs to do:
+
+| Copy this if your control... | Reference |
+|---|---|
+| Only computes/publishes values, touches no physical I/O | [`control/ethercat-rtt-probe/`](control/ethercat-rtt-probe/) |
+| Reads and/or writes physical I/O channels | [`control/ethercat-kbus-rtt-probe/`](control/ethercat-kbus-rtt-probe/) |
+
+### 1. Anatomy of a control
+
+Every Xentara C++ control is one class deriving from `xentara::Control`,
+with two methods and one registration line:
+
+```cpp
+// YourControl.hpp
+#include <xentara/cpp-control.h>
+
+class YourControl final : public xentara::Control
+{
+public:
+    void initialize(xentara::InitContext &context) override;
+    void step(xentara::RunContext &context) override;
+};
+```
+
+```cpp
+// YourControl.cpp
+#include "YourControl.hpp"
+
+// Registers the class with Xentara - required exactly once per module.
+const xentara::ControlExporter<YourControl> kYourControl;
+
+void YourControl::initialize(xentara::InitContext &context) { /* bind data points, see step 3 */ }
+void YourControl::step(xentara::RunContext &context) { /* runs once per scheduled cycle */ }
+```
+
+`initialize()` runs once at load; `step()` runs on every cycle the model's
+pipeline schedules it for (see step 4). Xentara enrolls **exactly one** C++
+control per running instance - see the
+[`multiple controls are enrolled`](#building-your-own-control-module-app-2--app-3)
+troubleshooting entry if you hit that.
+
+### 2. Project skeleton
+
+Same `CMakeLists.txt` shape for every control - copy
+[`control/ethercat-rtt-probe/CMakeLists.txt`](control/ethercat-rtt-probe/CMakeLists.txt)
+and rename:
+
+```cmake
+cmake_minimum_required(VERSION 3.25)
+project(YourControl LANGUAGES CXX)
+
+find_package(XentaraCPPControl REQUIRED)
+
+add_library(YourControl MODULE "src/YourControl.cpp")
+
+target_link_libraries(YourControl PRIVATE Xentara::cpp-control)
+```
+
+Build the same way as [Step B](#step-b---build-and-deploy-the-rtt-probe) -
+inside the `xentara/xentara-build` image, once for `amd64`, once for
+`arm64` if you're targeting a PFC300. See
+[`control/ethercat-rtt-probe/README.md`](control/ethercat-rtt-probe/README.md)
+for the exact build command; it's identical for any control, only the
+project name changes.
+
+### 3. Declare and bind your data points
+
+Data points flow in through `initialize()`, by name, via
+`context.config().getDataPoint("Name")` - one line per value your control
+reads or writes:
+
+```cpp
+void YourControl::initialize(xentara::InitContext &context)
+{
+    someOutput = context.config().getDataPoint("SomeOutput");
+    someInput  = context.config().getDataPoint("SomeInput");
+}
+```
+
+Each name is resolved through the model's `@Skill.CPP.Control` node, whose
+`parameters` map the names your C++ code uses to the actual data points in
+the model tree:
+
+```jsonc
+{
+  "@Skill.CPP.Control": {
+    "name": "YourControl",
+    "controlPath": "YourControl.so",
+    "parameters": {
+      "SomeOutput": "Registers.SomeOutput",
+      "SomeInput": "Connection.SomeInput"
+    }
+  }
+}
+```
+
+- `controlPath` is always the **bare filename** - no `control/` prefix (see
+  the [troubleshooting entry](#building-your-own-control-module-app-2--app-3)
+  if `step()` silently never runs).
+- The target on the right (`Registers.SomeOutput`, `Connection.SomeInput`)
+  must already exist elsewhere in the model - typically a
+  `@Skill.SignalFlow.Register` you declare yourself for computed values (as
+  App 2 does for its five `RTT.*` registers), or a discovered EtherCAT
+  channel aliased into a `@Group` (as App 3 does for `Connection.Do/Di/Ao/Ai`).
+  Model editing beyond hand-adding a register or two is Workbench territory
+  - see the [warning](#choose-your-app) on never hand-writing bus addresses.
+
+### 4. Schedule it
+
+A control does nothing until its `step` function is wired into a
+`@Pipeline` task, driven by a `@Timer` inside a `@Track` - the same pattern
+`template-rtt.json` already uses:
+
+```jsonc
+{ "@Timer": { "name": "1ms Timer", "period": "1ms" } },
+{
+  "@Pipeline": {
+    "triggers": [ "EtherCAT Track.1ms Timer.expired" ],
+    "segments": [
+      { "start": 0, "end": 1, "tasks": [
+        { "function": "Control.YourControl.step" },
+        { "function": "EtherCAT Terminal.loop" }
+      ]}
+    ]
+  }
+}
+```
+
+Order inside a segment matters: put your control's `step` **before** the
+EtherCAT bus loop task if it needs to set outputs that should go out that
+same cycle (as both example probes do), or **after** it if it needs to react
+to inputs the bus loop just read.
+
+### 5. Deploy and iterate
+
+Same two-command loop as [Step B](#step-b---build-and-deploy-the-rtt-probe)
+and [Step D](#step-d---load-the-model): `docker cp` the freshly built `.so`
+into `control/`, `docker cp` the updated `model.json` in if you changed
+wiring, restart, check **Logs**. No rediscovery needed unless the physical
+terminal row itself changed.
 
 ---
 
