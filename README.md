@@ -60,6 +60,8 @@ Before you start, make sure you have:
 - A WAGO EtherCAT coupler with at least one I/O terminal - **only** if you
   want the WAGO track below (App 2 / App 3 / App 4). The Xentara track
   (App 1) needs no hardware at all.
+
+  ![The hardware this repo's own measurements were taken on: a WAGO 752-9813 edge computer next to a 750-354 EtherCAT coupler with a mixed terminal row (750-1405, 750-1504, 750-1506, 750-467, 750-550, 750-600, 750-614)](images/wago-hw.png)
 - An MQTT broker (e.g. Mosquitto) and a running instance of
   [wago-hailo-example](https://github.com/WagoAlex/wago-hailo-example)
   publishing to `inference/yolov5m-results` - **only** if you want App 4's
@@ -509,8 +511,7 @@ a complete model, not a template) and open it in the TUI or connect Xentara
 Workbench to browse it - the `Registers` and `Control` groups below map
 one-to-one onto the code walked through in this section.
 
-<!-- Add your Xentara Workbench screenshots of model/example-blueprint.json here,
-     e.g. ![The blueprint model's Registers and Control groups in Xentara Workbench](images/workbench-blueprint-overview.png) -->
+![example-blueprint.json opened in Xentara Workbench: the Registers group (Enable/Counter/Active) and the BlueprintExample C++ control with its three configuration parameters](images/example-workbench-blueprint.png)
 
 > [!NOTE]
 > **Validated:** built cleanly against the Xentara build image, loaded with
@@ -700,6 +701,8 @@ for exactly which parameters the control expects, or open
 step already done - this repo's own `Connection.Do`/`Di`/`Ao`/`Ai` bound to
 `DO_8ch_8`/`DI_8ch_1`/`AO_1`/`AI_1` on its WAGO 750-354 coupler.
 
+![example-rtt-kbus.json opened in Xentara Workbench: the discovered WAGO 750 Bus Coupler, the Connection group's Do/Di/Ao/Ai, the RTT register group, and the EtherCATKbusRttProbe control](images/example-workbench-rtt-kbus.png)
+
 ### Step H - Watch the round trip in the TUI
 
 Browse to `Control.EtherCATKbusRttProbe` to confirm it's loaded, or straight
@@ -877,6 +880,8 @@ ssh <user>@<device-ip> 'sudo systemctl restart xentara@<user>.service'
 
 Check `journalctl -u xentara@<user>.service` for `Using model file …` and
 no errors.
+
+![example-mqtt-payload-control.json opened in Xentara Workbench: the Docker-MQTT client's broker address and MQTT settings, the discovered EtherCAT Terminal, Connection group (DO1-White/DO2-Blue/DO3-Head), and the MQTTPayloadControl C++ control](images/example-workbench-mqtt-payload-control.png)
 
 ### Step M - Watch it react
 
