@@ -1,24 +1,28 @@
 # wago-xentara-example
 
-A first-time-user walkthrough for running [Xentara](https://www.xentara.io/)
-on a WAGO edge device - from `git clone` to a running application - doing
-almost everything in a **web browser**.
+**Goal:** get [Xentara](https://www.xentara.io/) running on a WAGO edge
+device, end to end, doing almost everything in a **web browser**. No prior
+Xentara knowledge needed.
 
-You don't need any prior Xentara knowledge. You do need an edge computer (or
-WAGO edge controller) running Docker. A WAGO EtherCAT coupler with at least
-one digital I/O terminal is only needed for two of the three apps below - the
-third runs with no hardware at all.
+Two tracks, one shared setup:
+
+| Track | Hardware | Apps |
+|---|---|---|
+| **Xentara example** - runtime + licence only | None | App 1 |
+| **WAGO example** - real I/O on a WAGO coupler | WAGO EtherCAT coupler (+ 2 loopback wires for App 3) | App 2, App 3 |
+
+Both tracks run on an edge computer or WAGO edge controller with Docker.
+Start with the [deployment workflow overview](#deployment-workflow-overview)
+for the shape of the whole process, or jump straight to
+[Choose your app](#choose-your-app) below.
 
 ## Choose your app
 
-These three aren't independent choices, but they're also not all nested in
-each other. App 3 genuinely *is* App 2 plus wiring - same RTT registers,
-same control philosophy, with the K-Bus round trip added on top. App 1,
-though, is a separate model entirely (Xentara's own signal generator demo,
-no EtherCAT skill at all) - App 2 doesn't contain it or extend it, it's just
-the recommended first stop to prove the runtime and licence work before you
-involve real hardware. Every app shares the same first three steps (clone,
-deploy, license); climb from there as far as your hardware allows.
+App 3 is App 2 plus wiring - same RTT registers, same control, with the
+K-Bus round trip added on top. App 1 is a separate model (Xentara's own
+demo, no EtherCAT) - the recommended first stop to prove the runtime and
+licence before touching hardware. Every app shares the same first three
+steps (clone, deploy, license).
 
 | | Model file | EtherCAT hardware | Loopback wiring | Licence skills needed | What you get |
 |---|---|---|---|---|---|
@@ -71,10 +75,13 @@ scripts/
 
 ---
 
-## Deployment workflow (Portainer)
+## Deployment workflow overview
 
-The full path from an empty device to a running control app - and the
-shortcut once you already have a compiled `.so` from a previous run.
+High-level shape of the whole process - shared setup, then the no-hardware
+or with-hardware track. Step-by-step commands are in the sections below; the
+fully detailed diagram is in
+[Deployment workflow (detailed reference)](#deployment-workflow-detailed-reference)
+at the end of this document.
 
 ```mermaid
 %%{init: {'theme':'base', 'themeVariables': {
@@ -93,59 +100,23 @@ shortcut once you already have a compiled `.so` from a previous run.
   'clusterBorder':'#A5A8AF',
   'edgeLabelBackground':'#1F2837'
 }}}%%
-flowchart TB
-    subgraph Setup["Shared setup - every app starts here"]
-        direction LR
-        S0("Step 0<br/>git clone repo")
-        S1("Step 1<br/>Portainer: paste docker-compose.yml<br/>Deploy stack")
-        S2("Step 2<br/>Licence node ID<br/>at customerportal.xentara.io<br/>restart container")
-        S0 --> S1 --> S2
-    end
+flowchart LR
+    Setup("Shared setup<br/>clone → deploy stack → licence")
+    Choice{"Hardware<br/>available?"}
+    NoHw("Xentara example<br/>load demo model, run")
+    WithHw("WAGO example<br/>network NIC → build control<br/>→ discover I/O → deploy")
+    Run("Running application<br/>watch / write I/O in the TUI")
 
-    S2 --> Decide{"Do you already have<br/>a built .so control module?"}
-
-    Decide -- "No - first time" --> Build
-    Decide -- "Yes - reuse it" --> Skip
-
-    subgraph Build["Build path (App 2 / App 3)"]
-        direction TB
-        BA("Step A<br/>Network the EtherCAT NIC<br/>(WBM, no IP on that port)")
-        BB("Step B<br/>Write / edit the C++ control app<br/>(control/*-probe)")
-        BC("Step C<br/>Compile it<br/>cmake --build → libX.so")
-        BD("Step D<br/>Discover I/O on the live bus<br/>xentara-ethercat-model-file-generator<br/>template-*.json → model.json")
-        BA --> BB --> BC --> BD
-    end
-
-    subgraph Skip["Existing-app fast path"]
-        direction TB
-        XA("Reuse the already-built .so<br/>and an existing model.json<br/>skip B and C entirely")
-    end
-
-    Build --> Deploy
-    Skip --> Deploy
-
-    subgraph Deploy["Deploy to the device"]
-        direction LR
-        DA("docker cp *.so →<br/>.config/xentara/control/")
-        DB("docker cp model.json →<br/>.config/xentara/model.json")
-        DC("Restart container<br/>in Portainer")
-        DA --> DB --> DC
-    end
-
-    Deploy --> Verify("Check Logs for<br/>'Using model file …'<br/>no errors")
-    Verify --> Run("Open the TUI<br/>xentara-tui --host localhost --port 8080<br/>watch I/O live, write outputs")
+    Setup --> Choice
+    Choice -- "No" --> NoHw --> Run
+    Choice -- "Yes" --> WithHw --> Run
 ```
 
-- **Steps 0-2** are one-time per device and shared by every app (App 1 stops
-  after Step 2, since it needs no hardware and no control module).
-- **Steps A-D** are only needed the first time, or whenever the physical
-  terminal row changes (discovery must re-run) or the control logic changes
-  (recompile must re-run).
-- **Existing-app fast path**: if you're redeploying a control you already
-  built and a `model.json` you already have (e.g. reusing
-  [`model/example-rtt.json`](model/example-rtt.json) or a previous build's
-  `.so`), skip straight to **Deploy** - no NIC reconfiguration, no rewrite,
-  no recompile, no rediscovery.
+- **Shared setup** is one-time per device (see [Shared setup](#shared-setup-every-app-starts-here)).
+- **No hardware** -> [App 1](#app-1---xentara-demo-no-hardware).
+- **With hardware** -> [App 2](#app-2---wago-rtt-ethercat--cycle-time), then
+  optionally [App 3](#app-3---wago-rtt--k-bus-verified-hardware-round-trip)
+  for a verified hardware round trip.
 
 ---
 
@@ -561,6 +532,108 @@ enumerated a mixed row behind one coupler (analog, 8-channel digital, and
 reading live. A digital output was written from the Web Service, the same
 write path the TUI uses, and it switched and released as expected, holding a
 steady 1 ms cycle.
+
+## Deployment workflow (detailed reference)
+
+Every step from both tracks, with the existing-app fast path that skips
+straight to deploy. Node labels match the step headers below one for one -
+follow the legend to jump to the exact instructions for any node.
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': {
+  'primaryColor':'#1F2837',
+  'primaryTextColor':'#ffffff',
+  'primaryBorderColor':'#6EC800',
+  'lineColor':'#6EC800',
+  'secondaryColor':'#EFF0F1',
+  'secondaryTextColor':'#1F2837',
+  'secondaryBorderColor':'#A5A8AF',
+  'tertiaryColor':'#FFFFFF',
+  'tertiaryTextColor':'#1F2837',
+  'tertiaryBorderColor':'#DEDFE1',
+  'fontFamily':'Segoe UI, Helvetica, Arial, sans-serif',
+  'clusterBkg':'#EFF0F1',
+  'clusterBorder':'#A5A8AF',
+  'edgeLabelBackground':'#1F2837'
+}}}%%
+flowchart TB
+    subgraph Setup["Shared setup - every app starts here"]
+        direction LR
+        S0("Step 0<br/>Clone this repo")
+        S1("Step 1<br/>Deploy the runtime stack<br/>(Portainer)")
+        S2("Step 2<br/>Licence it<br/>(node ID, restart)")
+        S0 --> S1 --> S2
+    end
+
+    S2 --> Track{"Hardware<br/>available?"}
+
+    Track -- "No" --> App1
+
+    subgraph App1["App 1 - Xentara example, no hardware"]
+        direction LR
+        A1("Load the model<br/>sample-model.json")
+        A2("Watch it run<br/>TUI, live waveforms")
+        A1 --> A2
+    end
+
+    Track -- "Yes" --> Reuse{"Already have a built<br/>.so and a model.json?"}
+
+    Reuse -- "No - first time" --> App2Build
+    Reuse -- "Yes - reuse them" --> FastPath
+
+    subgraph App2Build["App 2 - WAGO RTT (build path)"]
+        direction TB
+        BA("Step A<br/>Network the EtherCAT NIC")
+        BB("Step B<br/>Build + deploy the RTT probe")
+        BC("Step C<br/>Discover I/O modules<br/>template-*.json → model.json")
+        BD("Step D<br/>Load the model")
+        BE("Step E<br/>Open the TUI, write an output")
+        BA --> BB --> BC --> BD --> BE
+    end
+
+    subgraph FastPath["Existing-app fast path"]
+        direction TB
+        FA("Reuse existing .so + model.json<br/>skip Steps A - D")
+    end
+
+    App2Build --> App2Done{"Add verified hardware<br/>round trip?"}
+    FastPath --> App2Done
+
+    App2Done -- "No" --> Done("Done - App 2 running")
+    App2Done -- "Yes, wire loopback" --> App3
+
+    subgraph App3["App 3 - WAGO RTT + K-Bus"]
+        direction TB
+        CF("Step F<br/>Wire the loopback<br/>DO to DI, AO to AI")
+        CG("Step G<br/>Bind the wired channels")
+        CH("Step H<br/>Watch the round trip in the TUI")
+        CF --> CG --> CH
+    end
+```
+
+| Node | Jump to |
+|---|---|
+| Step 0 | [Clone this repo](#step-0---clone-this-repo) |
+| Step 1 | [Download + deploy the runtime](#step-1---download--deploy-the-runtime-browser) |
+| Step 2 | [License it](#step-2---license-it-browser) |
+| App 1 - Load the model | [App 1: Load the model](#load-the-model) |
+| App 1 - Watch it run | [App 1: Watch it run](#watch-it-run) |
+| Step A | [Network the EtherCAT NIC](#step-a---network-the-ethercat-nic-browser) |
+| Step B | [Build and deploy the RTT probe](#step-b---build-and-deploy-the-rtt-probe) |
+| Step C | [Discover your I/O modules](#step-c---discover-your-io-modules) |
+| Step D | [Load the model](#step-d---load-the-model) |
+| Step E | [Open the TUI and write an output](#step-e---open-the-tui-and-write-an-output-browser) |
+| Step F | [Wire the loopback](#step-f---wire-the-loopback) |
+| Step G | [Bind the wired channels](#step-g---bind-the-wired-channels) |
+| Step H | [Watch the round trip in the TUI](#step-h---watch-the-round-trip-in-the-tui) |
+
+- **Steps 0-2** are one-time per device; App 1 needs nothing past Step 2.
+- **Steps A-D** only need re-running when the physical terminal row changes
+  (rediscover) or the control logic changes (rebuild).
+- **Existing-app fast path**: redeploying a control you already built and a
+  `model.json` you already have (e.g.
+  [`model/example-rtt.json`](model/example-rtt.json)) skips Steps A-D
+  entirely - copy the `.so` and the model in, restart, done.
 
 ## References
 
