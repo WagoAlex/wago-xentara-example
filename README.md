@@ -4,25 +4,37 @@
 device, end to end, doing almost everything in a **web browser**. No prior
 Xentara knowledge needed.
 
-Two tracks, one shared setup:
+## Prerequisites
+
+Before you start, make sure you have:
+
+- An edge computer or WAGO edge controller running **Docker**.
+- **Portainer** already installed on that device and reachable in your
+  browser at `https://<device-ip>:9443/`. This guide deploys *into*
+  Portainer - it doesn't install Portainer itself.
+- A WAGO EtherCAT coupler with at least one I/O terminal - **only** if you
+  want the WAGO track below (App 2 / App 3). The Xentara track (App 1) needs
+  no hardware at all.
+
+## Two tracks, one shared setup
 
 | Track | Hardware | Apps |
 |---|---|---|
 | **Xentara example** - runtime + licence only | None | App 1 |
 | **WAGO example** - real I/O on a WAGO coupler | WAGO EtherCAT coupler (+ 2 loopback wires for App 3) | App 2, App 3 |
 
-Both tracks run on an edge computer or WAGO edge controller with Docker.
-Start with the [deployment workflow overview](#deployment-workflow-overview)
-for the shape of the whole process, or jump straight to
-[Choose your app](#choose-your-app) below.
+Every app starts with the same three steps (clone, deploy, license) in
+[Shared setup](#shared-setup-every-app-starts-here). From there, pick your
+track and follow the matching app below. For the shape of the whole process
+at a glance, see [Deployment workflow overview](#deployment-workflow-overview).
 
 ## Choose your app
 
-App 3 is App 2 plus wiring - same RTT registers, same control, with the
-K-Bus round trip added on top. App 1 is a separate model (Xentara's own
-demo, no EtherCAT) - the recommended first stop to prove the runtime and
-licence before touching hardware. Every app shares the same first three
-steps (clone, deploy, license).
+App 3 (WAGO example) is App 2 plus wiring - same RTT registers, same
+control, with the K-Bus round trip added on top. App 1 (Xentara example) is
+a separate model, Xentara's own demo with no EtherCAT involved - the
+recommended first stop to prove the runtime and licence work before you
+touch hardware.
 
 | | Model file | EtherCAT hardware | Loopback wiring | Licence skills needed | What you get |
 |---|---|---|---|---|---|
@@ -77,9 +89,9 @@ scripts/
 
 ## Deployment workflow overview
 
-High-level shape of the whole process - shared setup, then the no-hardware
-or with-hardware track. Step-by-step commands are in the sections below; the
-fully detailed diagram is in
+The process below at a glance. For exact commands, see
+[Shared setup](#shared-setup-every-app-starts-here) and your chosen app; for
+every step in one diagram, see
 [Deployment workflow (detailed reference)](#deployment-workflow-detailed-reference)
 at the end of this document.
 
@@ -159,15 +171,20 @@ comments in the compose file.
 > under host networking. You reach Xentara through its console and TUI
 > (steps below).
 
+### Opening the container console
+
+Several steps below need a terminal inside the running container. Always the
+same path: **Containers -> xentara-tryout -> Console -> Connect** (shell
+`/bin/bash`) - this opens a terminal in your browser, no SSH needed. Later
+steps just link back here as "open the container console."
+
 ### Step 2 - License it (browser)
 
-Xentara is licensed per **node ID**. This is a condensed version of the
-licensing steps in the [Xentara on Docker: Quick Start](https://kb.xentara.io/articles/xentara-on-docker-quick-start-guide)
-guide (see [References](#references)) - follow that guide directly if
-anything here doesn't match your version.
+Xentara is licensed per **node ID**. This condenses the licensing steps from
+Xentara's own [Quick Start guide](https://kb.xentara.io/articles/xentara-on-docker-quick-start-guide) -
+use that guide directly if anything here doesn't match your version.
 
-1. In Portainer: **Containers -> xentara-tryout -> Console -> Connect**
-   (`/bin/bash`). This is a terminal in your browser.
+1. [Open the container console](#opening-the-container-console).
 2. Run:
    ```bash
    xentara-licence-id
@@ -188,9 +205,9 @@ Now pick your app.
 
 ## App 1 - Xentara demo (no hardware)
 
-Confirms the runtime and TUI work, using Xentara's own sample model - a
-signal generator producing six synthetic waveforms, fed into a debug
-inspector. No EtherCAT bus, no wiring, no discovery step.
+*Xentara example track.* Confirms the runtime and TUI work, using Xentara's
+own sample model - a signal generator producing six synthetic waveforms, fed
+into a debug inspector. No EtherCAT bus, no wiring, no discovery step.
 
 ### Load the model
 
@@ -204,7 +221,7 @@ file …` and no errors.
 
 ### Watch it run
 
-From Portainer: **Containers -> xentara-tryout -> Console -> Connect**, then:
+[Open the container console](#opening-the-container-console), then:
 
 ```bash
 xentara-tui --host localhost --port 8080 --user xentara
@@ -223,8 +240,8 @@ to wire up.
 
 ## App 2 - WAGO RTT (EtherCAT + cycle time)
 
-Your real I/O, discovered automatically, plus a live software cycle-time
-readout.
+*WAGO example track.* Your real I/O, discovered automatically, plus a live
+software cycle-time readout.
 
 ### Step A - Network the EtherCAT NIC (browser)
 
@@ -294,12 +311,9 @@ the physical row changes. That's exactly why you discover instead of
 hand-writing addresses.
 
 > [!WARNING]
-> Don't open `template-rtt.json` / `template-rtt-kbus.json` / `template-minimal.json`
-> directly in the Xentara Workbench or copy them straight to the device as
-> `model.json` - the `#CoE.Bus:...` marker string is only meaningful to the
-> generator; it's not valid Xentara model syntax and will fail to import
-> ("expected a JSON object" at that line). Always run the generator first;
-> its **output** file is the one you load, import, or deploy.
+> Load the **output** `model.json` from the command above, never the
+> `template-*.json` itself - see the warning under
+> [Choose your app](#choose-your-app) for why.
 
 > [!IMPORTANT]
 > The generator doesn't set the bus synchronization mode; set it to **free
@@ -336,7 +350,7 @@ you'd rather read one than generate one.
 
 ### Step E - Open the TUI and write an output (browser)
 
-From Portainer: **Containers -> xentara-tryout -> Console -> Connect**, then:
+[Open the container console](#opening-the-container-console), then:
 
 ```bash
 xentara-tui --host localhost --port 8080 --user xentara
@@ -344,9 +358,7 @@ xentara-tui --host localhost --port 8080 --user xentara
 
 ![Launching the TUI from the Portainer container console](images/tui-start-from-portainer.png)
 
-Navigate the model tree with the arrow keys, Enter to descend. The
-[Xentara on Docker: Quick Start](https://kb.xentara.io/articles/xentara-on-docker-quick-start-guide)
-guide covers the same TUI walkthrough if you want the vendor's version.
+Navigate the model tree with the arrow keys, Enter to descend.
 
 ![Navigating to the discovered EtherCAT bus and coupler in the model tree](images/tui-app2-wago-coupler-discover.png)
 
@@ -410,7 +422,7 @@ That's the whole app.
 
 ## App 3 - WAGO RTT + K-Bus (verified hardware round trip)
 
-Everything in App 2, plus a real, wired, timed round trip: a digital output
+*WAGO example track.* Everything in App 2, plus a real, wired, timed round trip: a digital output
 flipped and read back through an input wired to it, and an analog output
 stepped (and separately ramped) and read back the same way. This is the only
 app here that tells you how long a value actually takes to reach physical
@@ -512,17 +524,29 @@ available.
 
 ## Troubleshooting
 
+### Deployment and licensing (all apps)
+
 | Symptom | Fix |
 |---|---|
 | Licence error in logs | Activate the node ID at customerportal.xentara.io, then restart. |
 | TUI 401 after setting the password | Restart the container - the password is read only at startup. |
 | TUI SSL error on 8080 | Try port **8006** instead. |
-| Discovery: "can't open interface" | Another Xentara instance owns the NIC - stop it first. |
-| Discovery: "connected devices less than configured" | Coupler state machine out of sync; run `xentara-ethercat-device-info --interface <your-nic>` once, then retry. |
-| A control's `step()` never runs, no error | `controlPath` had a `control/` prefix - use the bare filename. |
-| `multiple controls are enrolled` | One C++ control per instance; remove the extra `@Skill.CPP.Control`. |
 | Config/model/licence gone after redeploy | No persistent volume - back up before recreating, or add bind mounts. |
 | Jittery cycle time | Real-time thread preempted - fix `XENTARA_AFFINITY`, isolate the core, use an RT kernel. |
+
+### EtherCAT discovery and I/O (App 2 / App 3)
+
+| Symptom | Fix |
+|---|---|
+| Discovery: "can't open interface" | Another Xentara instance owns the NIC - stop it first. |
+| Discovery: "connected devices less than configured" | Coupler state machine out of sync; run `xentara-ethercat-device-info --interface <your-nic>` once, then retry. |
+
+### Building your own control module (App 2 / App 3)
+
+| Symptom | Fix |
+|---|---|
+| A control's `step()` never runs, no error | `controlPath` had a `control/` prefix - use the bare filename. |
+| `multiple controls are enrolled` | One C++ control per instance; remove the extra `@Skill.CPP.Control`. |
 
 ## Validated
 
