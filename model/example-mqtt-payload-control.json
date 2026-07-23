@@ -1,0 +1,899 @@
+{
+  "$schema": "https://docs.xentara.io/xentara/schema-xentara-model.json",
+  "children": [
+    {
+      "@Skill.CoE.Bus": {
+        "UUID": "d159f390-b329-411f-86bc-da89ceae8452",
+        "children": [
+          {
+            "@Skill.CoE.Device": {
+              "UUID": "837e0a31-f326-4141-9ec0-af5590d835a6",
+              "children": [
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "663bcaec-2048-491d-ab1d-716f5cb87d2b",
+                    "bufferAddress": "0x0000.0",
+                    "dataType": "BOOLEAN",
+                    "index": "0xF200",
+                    "name": "K-Bus Cycle Overrun Flag Disable",
+                    "subIndex": 1,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "f07265e3-a0cf-46d1-ae69-3a3af6f34d49",
+                    "bufferAddress": "0x0000.1",
+                    "dataType": "BOOLEAN",
+                    "index": "0xF200",
+                    "name": "Input Process Data Hold Request",
+                    "subIndex": 2,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "5fef39bb-ad1b-4f54-be62-04993dffecc3",
+                    "bufferAddress": "0x0000.2",
+                    "dataType": "BOOLEAN",
+                    "index": "0xF200",
+                    "name": "Output Process Data Hold Request",
+                    "subIndex": 3,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "5cfb2542-e30b-4f4f-8cae-5b8b872c8ec3",
+                    "bufferAddress": "0x0000.3",
+                    "dataType": "BOOLEAN",
+                    "index": "0xF200",
+                    "name": "Output Process Data Clear Request",
+                    "subIndex": 4,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "d0d7e934-58e9-4653-b149-c21083dedd22",
+                    "bufferAddress": "0x0002.0",
+                    "dataType": "UNSIGNED16",
+                    "index": "0xF200",
+                    "name": "Diagnostics Control Word",
+                    "subIndex": 5,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "cb59365c-e900-40b0-9564-802e6637fab6",
+                    "bufferAddress": "0x0004.0",
+                    "dataType": "UNSIGNED16",
+                    "index": "0x7040",
+                    "name": "Channel 1, Word 1",
+                    "subIndex": 1,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "bf04af34-a19e-4ba2-8010-3ae24b2e5897",
+                    "bufferAddress": "0x0006.0",
+                    "dataType": "UNSIGNED16",
+                    "index": "0x7040",
+                    "name": "Channel 2, Word 1",
+                    "subIndex": 2,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "5deda2af-310c-40e9-84f6-11523fc542b1",
+                    "bufferAddress": "0x0008.0",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7000",
+                    "name": "Channel 1, Data 1",
+                    "subIndex": 1,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "a4d335c6-9eaf-4308-a86b-d1d539d58a48",
+                    "bufferAddress": "0x0008.1",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7000",
+                    "name": "Channel 2, Data 1",
+                    "subIndex": 2,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "1bd67c76-66b4-4252-8d48-364fc665ad52",
+                    "bufferAddress": "0x0008.2",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7000",
+                    "name": "Channel 3, Data 1",
+                    "subIndex": 3,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "8afa7b48-b010-4a70-8169-21f673e40b91",
+                    "bufferAddress": "0x0008.3",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7000",
+                    "name": "Channel 4, Data 1",
+                    "subIndex": 4,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "25f9bc8d-c4b9-44e3-9f7c-5fbfe69ea4d5",
+                    "bufferAddress": "0x0008.4",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7000",
+                    "name": "Channel 5, Data 1",
+                    "subIndex": 5,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "8a691728-72d7-4c7c-8ba3-80c3e01b78aa",
+                    "bufferAddress": "0x0008.5",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7000",
+                    "name": "Channel 6, Data 1",
+                    "subIndex": 6,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "c08bff26-12fa-46c1-9fd3-0eb4543feb98",
+                    "bufferAddress": "0x0008.6",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7000",
+                    "name": "Channel 7, Data 1",
+                    "subIndex": 7,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "ececb1e9-6d21-4823-8c2e-47fe87e7276c",
+                    "bufferAddress": "0x0008.7",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7000",
+                    "name": "Channel 8, Data 1",
+                    "subIndex": 8,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "928bf347-b608-41bd-9153-47d783dc6960",
+                    "bufferAddress": "0x0009.0",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 1, Data 1 (2)",
+                    "subIndex": 1,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "bac1ba3b-5279-4ce2-acd4-89bbbe59e7ae",
+                    "bufferAddress": "0x0009.1",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 2, Data 1 (2)",
+                    "subIndex": 2,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "1d26d9d6-000b-488c-b2d8-19a803bc5c04",
+                    "bufferAddress": "0x0009.2",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 3, Data 1 (2)",
+                    "subIndex": 3,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "63c6976f-c177-49bf-b47d-56269212aeab",
+                    "bufferAddress": "0x0009.3",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 4, Data 1 (2)",
+                    "subIndex": 4,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "5e18e540-68b6-4afa-ab5a-e0016a23fdda",
+                    "bufferAddress": "0x0009.4",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 5, Data 1 (2)",
+                    "subIndex": 5,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "ab2801a4-7073-4b69-8c59-15f4a39639cb",
+                    "bufferAddress": "0x0009.5",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 6, Data 1 (2)",
+                    "subIndex": 6,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "8f2e592a-a730-4ef4-9c6a-ef03b6a53944",
+                    "bufferAddress": "0x0009.6",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 7, Data 1 (2)",
+                    "subIndex": 7,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "48bd7b64-f9df-4115-a295-1d0d9cfd7024",
+                    "bufferAddress": "0x0009.7",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 8, Data 1 (2)",
+                    "subIndex": 8,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "8119a465-7e01-4ee7-b0e4-d4a112ca9e80",
+                    "bufferAddress": "0x000A.0",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 9, Data 1",
+                    "subIndex": 9,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "50d3192a-7222-4e54-a62e-575f15832b9c",
+                    "bufferAddress": "0x000A.1",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 10, Data 1",
+                    "subIndex": 10,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "01f3cfe5-fa68-4072-84c2-04add9be24df",
+                    "bufferAddress": "0x000A.2",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 11, Data 1",
+                    "subIndex": 11,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "d0fb6442-8d6b-4de5-8bcf-7e5e54ba9754",
+                    "bufferAddress": "0x000A.3",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 12, Data 1",
+                    "subIndex": 12,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "9031777a-40b0-48b3-ae6f-7c88192ae20c",
+                    "bufferAddress": "0x000A.4",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 13, Data 1",
+                    "subIndex": 13,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "81ac7950-1284-48f8-ae18-ac6afe693eab",
+                    "bufferAddress": "0x000A.5",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 14, Data 1",
+                    "subIndex": 14,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "8e8e405c-168e-4487-b029-548b1ff58dc6",
+                    "bufferAddress": "0x000A.6",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 15, Data 1",
+                    "subIndex": 15,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "3d150bff-ad05-452a-8413-62fca8fb8cd1",
+                    "bufferAddress": "0x000A.7",
+                    "dataType": "BOOLEAN",
+                    "index": "0x7010",
+                    "name": "Channel 16, Data 1",
+                    "subIndex": 16,
+                    "syncManager": 2
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "81bd085c-fcd5-4090-b1cb-fe2d6c05372e",
+                    "bufferAddress": "0x0000.0",
+                    "dataType": "BOOLEAN",
+                    "index": "0xF100",
+                    "name": "K-Bus Cycle Overrun Flag",
+                    "subIndex": 1,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "f9275d41-7f37-49b5-b6ff-de679df42134",
+                    "bufferAddress": "0x0000.1",
+                    "dataType": "BOOLEAN",
+                    "index": "0xF100",
+                    "name": "Input Process Data Hold Ack",
+                    "subIndex": 2,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "ba7b68be-3d2b-4347-819a-fa6a9c9252d5",
+                    "bufferAddress": "0x0000.2",
+                    "dataType": "BOOLEAN",
+                    "index": "0xF100",
+                    "name": "Output Process Data Hold Ack",
+                    "subIndex": 3,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "8681c8db-aee0-4023-a363-72d1d51af669",
+                    "bufferAddress": "0x0000.3",
+                    "dataType": "BOOLEAN",
+                    "index": "0xF100",
+                    "name": "Output Process Data Clear Ack",
+                    "subIndex": 4,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "014bb8d8-bccf-4006-b732-66c2ac304ca3",
+                    "bufferAddress": "0x0001.7",
+                    "dataType": "BOOLEAN",
+                    "index": "0x10F3",
+                    "name": "New Message Available",
+                    "subIndex": 4,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "b1beeee3-9db9-4bdc-a011-df2e6a1242ac",
+                    "bufferAddress": "0x0002.0",
+                    "dataType": "UNSIGNED16",
+                    "index": "0xF100",
+                    "name": "Diagnostics Status Word",
+                    "subIndex": 5,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "cac8e397-81bd-4e49-a216-dd835342cc29",
+                    "bufferAddress": "0x0004.0",
+                    "dataType": "UNSIGNED16",
+                    "index": "0x6030",
+                    "name": "Channel 1, Word 1 (2)",
+                    "subIndex": 1,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "c4e4d7bf-22ed-407c-871a-2714b1fd0b76",
+                    "bufferAddress": "0x0006.0",
+                    "dataType": "UNSIGNED16",
+                    "index": "0x6030",
+                    "name": "Channel 2, Word 1 (2)",
+                    "subIndex": 2,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "4df3699f-0da8-43d9-85e6-fd22800931a5",
+                    "bufferAddress": "0x0008.0",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6000",
+                    "name": "Channel 1, Data 1 (3)",
+                    "subIndex": 1,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "ba6541f3-0e90-48dd-9a96-5ef0c25865c4",
+                    "bufferAddress": "0x0008.1",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6000",
+                    "name": "Channel 2, Data 1 (3)",
+                    "subIndex": 2,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "c999dcbe-9c9b-4ff6-b3d3-b1a0d561b69d",
+                    "bufferAddress": "0x0008.2",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6000",
+                    "name": "Channel 3, Data 1 (3)",
+                    "subIndex": 3,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "77d4f375-5228-4a89-af2b-6e934fa149dd",
+                    "bufferAddress": "0x0008.3",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6000",
+                    "name": "Channel 4, Data 1 (3)",
+                    "subIndex": 4,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "9cc5a7d1-887c-4b55-ba2b-0de4e4331b7e",
+                    "bufferAddress": "0x0008.4",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6000",
+                    "name": "Channel 5, Data 1 (3)",
+                    "subIndex": 5,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "a56d9ddb-493f-46cd-89b2-2c04f4c6047e",
+                    "bufferAddress": "0x0008.5",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6000",
+                    "name": "Channel 6, Data 1 (3)",
+                    "subIndex": 6,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "5b06bca6-8f2d-42d1-b7d3-487e19fa493d",
+                    "bufferAddress": "0x0008.6",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6000",
+                    "name": "Channel 7, Data 1 (3)",
+                    "subIndex": 7,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "fc941ba0-c8eb-4151-8411-cad9b28dc991",
+                    "bufferAddress": "0x0008.7",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6000",
+                    "name": "Channel 8, Data 1 (3)",
+                    "subIndex": 8,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "0d0819f6-6ff9-4db2-ba1d-b828b5e9fe92",
+                    "bufferAddress": "0x0009.0",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 1, Data 1 (4)",
+                    "subIndex": 1,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "492c680d-e5e9-467d-bbf4-3711bfa4b1b2",
+                    "bufferAddress": "0x0009.1",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 2, Data 1 (4)",
+                    "subIndex": 2,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "08dc1678-214e-42f3-8329-1b329c8c7aa7",
+                    "bufferAddress": "0x0009.2",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 3, Data 1 (4)",
+                    "subIndex": 3,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "a344e049-321c-4d73-aed6-553f3bf6fdb7",
+                    "bufferAddress": "0x0009.3",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 4, Data 1 (4)",
+                    "subIndex": 4,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "ae135549-0c6b-4e86-9a01-e9d8c6a61e09",
+                    "bufferAddress": "0x0009.4",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 5, Data 1 (4)",
+                    "subIndex": 5,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "6f315d98-2ecf-4230-96b8-167eba32bd57",
+                    "bufferAddress": "0x0009.5",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 6, Data 1 (4)",
+                    "subIndex": 6,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "3be1529e-e162-443a-835b-9be9b97c95d0",
+                    "bufferAddress": "0x0009.6",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 7, Data 1 (4)",
+                    "subIndex": 7,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "e5b47085-70d0-489b-a87a-4cc88ff73b2f",
+                    "bufferAddress": "0x0009.7",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 8, Data 1 (4)",
+                    "subIndex": 8,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "0dd233ad-782f-4dcf-a929-e721d6878965",
+                    "bufferAddress": "0x000A.0",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 9, Data 1 (2)",
+                    "subIndex": 9,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "e0c66e3c-5cff-470e-ae2c-77a245764bc5",
+                    "bufferAddress": "0x000A.1",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 10, Data 1 (2)",
+                    "subIndex": 10,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "beb3d732-8e1c-4c64-ae15-f9b3617ee794",
+                    "bufferAddress": "0x000A.2",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 11, Data 1 (2)",
+                    "subIndex": 11,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "bd546498-3d6c-4902-824c-5af5a971f9be",
+                    "bufferAddress": "0x000A.3",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 12, Data 1 (2)",
+                    "subIndex": 12,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "21dcc181-d34d-4f13-8ae3-77988d9a1ed9",
+                    "bufferAddress": "0x000A.4",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 13, Data 1 (2)",
+                    "subIndex": 13,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "700d49a9-226a-4cee-bd52-4ff5e39d211a",
+                    "bufferAddress": "0x000A.5",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 14, Data 1 (2)",
+                    "subIndex": 14,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "720f66f5-93dd-4f8a-8238-fa70659ced4d",
+                    "bufferAddress": "0x000A.6",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 15, Data 1 (2)",
+                    "subIndex": 15,
+                    "syncManager": 3
+                  }
+                },
+                {
+                  "@Skill.CoE.Entry": {
+                    "UUID": "a40d22a1-c880-4984-9c0c-6e91f52fef08",
+                    "bufferAddress": "0x000A.7",
+                    "dataType": "BOOLEAN",
+                    "index": "0x6020",
+                    "name": "Channel 16, Data 1 (2)",
+                    "subIndex": 16,
+                    "syncManager": 3
+                  }
+                }
+              ],
+              "name": "WAGO Series 750 Bus Coupler",
+              "position": 1,
+              "slotIndexIncrement": 1
+            }
+          }
+        ],
+        "interface": "X11",
+        "name": "EtherCAT Terminal",
+        "synchronization": {
+          "mode": "free run"
+        }
+      }
+    },
+    {
+      "@Group": {
+        "UUID": "322a00a4-8dd2-4f94-8787-bdba2f01df6f",
+        "children": [
+          {
+            "@DataPoint": {
+              "UUID": "5d11b12f-b08f-4add-9c3e-443a70946339",
+              "io": "EtherCAT Terminal.WAGO Series 750 Bus Coupler.Channel 1, Data 1",
+              "name": "DO1-White"
+            }
+          },
+          {
+            "@DataPoint": {
+              "UUID": "4c533f56-7f85-4c56-9729-f826c8054eb9",
+              "io": "EtherCAT Terminal.WAGO Series 750 Bus Coupler.Channel 2, Data 1",
+              "name": "DO2-Blue"
+            }
+          },
+          {
+            "@DataPoint": {
+              "UUID": "0d763458-e1ce-4d01-84b7-8c6c49e9bd5b",
+              "io": "EtherCAT Terminal.WAGO Series 750 Bus Coupler.Channel 3, Data 1",
+              "name": "DO3-Head"
+            }
+          }
+        ],
+        "name": "Connection"
+      }
+    },
+    {
+      "@Skill.MQTT.Client": {
+        "MQTTVersion": "5",
+        "TLS": {
+          "enabled": false
+        },
+        "UUID": "1ce45fa0-7501-404c-b149-2f4fedf17ba8",
+        "brokerAddress": "192.168.2.124",
+        "children": [
+          {
+            "@Skill.MQTT.Command": {
+              "UUID": "fe076a7e-a169-4d6c-a6d7-d4b41ad466b8",
+              "name": "Command",
+              "payload": [
+                {
+                  "@DataPoint": {
+                    "asJSONText": true,
+                    "dataPoint": "Registers.MQTT-Payload",
+                    "jsonPath": "$.detections"
+                  }
+                }
+              ],
+              "topic": "inference/yolov5m-results"
+            }
+          }
+        ],
+        "keepaliveInterval": "60s",
+        "name": "Docker-MQTT"
+      }
+    },
+    {
+      "@Group": {
+        "UUID": "637f23d5-a69e-4433-b44d-74e8d628dcc7",
+        "children": [
+          {
+            "@Skill.SignalFlow.Register": {
+              "UUID": "1ceac447-7894-4169-a904-14b6e0c1bdba",
+              "defaultValue": [
+                "string",
+                ""
+              ],
+              "name": "MQTT-Payload"
+            }
+          }
+        ],
+        "name": "Registers"
+      }
+    },
+    {
+      "@Group": {
+        "UUID": "7af7b8a4-35ea-4af2-90b7-02ab374c6ab9",
+        "children": [
+          {
+            "@Skill.CPP.Control": {
+              "UUID": "de68b55e-ce6f-4264-8394-bf34953624bb",
+              "controlPath": "MQTTPayloadControl.so",
+              "name": "MQTTPayloadControl",
+              "parameters": {
+                "Blue": "Connection.DO2-Blue",
+                "Head": "Connection.DO3-Head",
+                "Payload": "Registers.MQTT-Payload",
+                "White": "Connection.DO1-White"
+              }
+            }
+          }
+        ],
+        "name": "Control"
+      }
+    },
+    {
+      "@Track": {
+        "UUID": "324f4d0e-ba71-4e48-be9c-b85c8f05f84a",
+        "children": [
+          {
+            "@Timer": {
+              "UUID": "8663d201-7c2f-4999-8fbd-17cfa5a46570",
+              "name": "Timer1ms",
+              "period": "1ms"
+            }
+          },
+          {
+            "@Pipeline": {
+              "UUID": "d3319792-7c50-42a8-aaff-336fb3671485",
+              "checkpoints": [
+                {},
+                {}
+              ],
+              "name": "Pipeline",
+              "segments": [
+                {
+                  "end": 1,
+                  "start": 0,
+                  "tasks": [
+                    {
+                      "function": "Control.MQTTPayloadControl.step"
+                    },
+                    {
+                      "function": "EtherCAT Terminal.loop"
+                    }
+                  ]
+                }
+              ],
+              "triggers": [
+                "Track EtherCAT Control.Timer1ms.expired"
+              ]
+            }
+          }
+        ],
+        "name": "Track EtherCAT Control"
+      }
+    },
+    {
+      "@Track": {
+        "UUID": "6e8b4f8f-5c9f-4a34-a7e6-f828e07a8c52",
+        "children": [
+          {
+            "@Timer": {
+              "UUID": "f6f66f28-6175-4fb7-8029-ebb04516d8af",
+              "name": "Timer5s",
+              "period": "5s"
+            }
+          },
+          {
+            "@Pipeline": {
+              "UUID": "9e3f50d5-8b50-4f71-bdca-0313a8318e43",
+              "checkpoints": [
+                {},
+                {}
+              ],
+              "name": "PipelineReconnect",
+              "segments": [
+                {
+                  "end": 1,
+                  "start": 0,
+                  "tasks": [
+                    {
+                      "function": "Docker-MQTT.reconnect"
+                    }
+                  ]
+                }
+              ],
+              "triggers": [
+                "Track MQTT Reconnect.Timer5s.expired"
+              ]
+            }
+          }
+        ],
+        "name": "Track MQTT Reconnect"
+      }
+    }
+  ]
+}

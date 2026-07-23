@@ -1,0 +1,16 @@
+{
+  "name": "Xentara",
+  "image": "xentara/xentara-build",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cmake-tools",
+        "llvm-vs-code-extensions.vscode-clangd",
+        "ms-vscode.cpptools",
+        "ms-vscode.cpptools-extension-pack",
+        "xaver.clang-format",
+        "netcorext.uuid-generator"
+      ]
+    }
+  }
+}

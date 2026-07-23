@@ -36,6 +36,13 @@ Xentara knowledge needed.
   - [Step F - Wire the loopback](#step-f---wire-the-loopback)
   - [Step G - Bind the wired channels](#step-g---bind-the-wired-channels)
   - [Step H - Watch the round trip in the TUI](#step-h---watch-the-round-trip-in-the-tui)
+- [App 4 - MQTT Payload Control (AI-driven outputs)](#app-4---mqtt-payload-control-ai-driven-outputs)
+  - [Step I - Run the inference source](#step-i---run-the-inference-source-external)
+  - [Step J - Build the control](#step-j---build-the-control)
+  - [Step K - Discover your I/O modules](#step-k---discover-your-io-modules)
+  - [Step L - Load the model](#step-l---load-the-model)
+  - [Step M - Watch it react](#step-m---watch-it-react)
+  - [Confirmed on real hardware](#confirmed-on-real-hardware)
 - [Troubleshooting](#troubleshooting)
 - [Validated](#validated)
 - [Deployment workflow (detailed reference)](#deployment-workflow-detailed-reference)
@@ -51,15 +58,25 @@ Before you start, make sure you have:
   browser at `https://<device-ip>:9443/`. This guide deploys *into*
   Portainer - it doesn't install Portainer itself.
 - A WAGO EtherCAT coupler with at least one I/O terminal - **only** if you
-  want the WAGO track below (App 2 / App 3). The Xentara track (App 1) needs
-  no hardware at all.
+  want the WAGO track below (App 2 / App 3 / App 4). The Xentara track
+  (App 1) needs no hardware at all.
+- An MQTT broker (e.g. Mosquitto) and a running instance of
+  [wago-hailo-example](https://github.com/WagoAlex/wago-hailo-example)
+  publishing to `inference/yolov5m-results` - **only** if you want App 4's
+  AI-driven outputs.
+- **App 4 specifically also needs a native Xentara install** (not the
+  `xentara-tryout` Docker container Apps 1-3 use) with
+  `xentara-mqtt-client >= 2.0+2.2` - check with
+  `dpkg -l | grep xentara-mqtt-client` on the device. The native install
+  and any Docker container both want exclusive use of the EtherCAT NIC, so
+  only one of "Apps 1-3" or "App 4" can run at a time.
 
 ## Two tracks, one shared setup
 
 | Track | Hardware | Apps |
 |---|---|---|
 | **Xentara example** - runtime + licence only | None | App 1 |
-| **WAGO example** - real I/O on a WAGO coupler | WAGO EtherCAT coupler (+ 2 loopback wires for App 3) | App 2, App 3 |
+| **WAGO example** - real I/O on a WAGO coupler | WAGO EtherCAT coupler (+ 2 loopback wires for App 3; + an MQTT broker and [wago-hailo-example](https://github.com/WagoAlex/wago-hailo-example) for App 4) | App 2, App 3, App 4 |
 
 Every app starts with the same three steps (clone, deploy, license) in
 [Shared setup](#shared-setup-every-app-starts-here). From there, pick your
@@ -75,17 +92,21 @@ App 3 (WAGO example) is App 2 plus wiring - same RTT registers, same
 control, with the K-Bus round trip added on top. App 1 (Xentara example) is
 a separate model, Xentara's own demo with no EtherCAT involved - the
 recommended first stop to prove the runtime and licence work before you
-touch hardware.
+touch hardware. App 4 reuses App 2's coupler but replaces loopback wiring
+and TUI writes with a real external system: three outputs driven by an AI
+detection feed over MQTT instead.
 
 | | Model file | EtherCAT hardware | Loopback wiring | Licence skills needed | What you get |
 |---|---|---|---|---|---|
 | **App 1** - [Xentara demo](#app-1---xentara-demo-no-hardware) | [`schemas/sample-model.json`](schemas/sample-model.json) | Not needed | Not needed | Base runtime only | Synthetic waveforms (pulse, sine, ramp, noise) piped into a live debug inspector - confirms the runtime and licence work before you touch any wiring. |
 | **App 2** - [WAGO RTT](#app-2---wago-rtt-ethercat--cycle-time) | [`model/template-rtt.json`](model/template-rtt.json) | Required (coupler on the wire) | Not needed | `CoE` (EtherCAT) + `CPP` (C++ control) | Your real I/O discovered and editable in the TUI, plus a live software cycle-time readout. A separate model from App 1, not an extension of it. |
 | **App 3** - [WAGO RTT + K-Bus](#app-3---wago-rtt--k-bus-verified-hardware-round-trip) | [`model/template-rtt-kbus.json`](model/template-rtt-kbus.json) | Required (same as App 2) | Required (2 loopback wires) | Same as App 2 - no extra skill | Everything in App 2, plus a *verified hardware* round trip: a real digital and analog signal sent out and read back, timed for real. |
+| **App 4** - [MQTT Payload Control](#app-4---mqtt-payload-control-ai-driven-outputs) | [`model/template-mqtt-payload-control.json`](model/template-mqtt-payload-control.json) | Required (same coupler, 3 spare DO channels) | Not needed | `CoE` + `CPP` + `MQTT` (`>= 2.0+2.2`, native install only - not `xentara-tryout`) | Real AI detections from [wago-hailo-example](https://github.com/WagoAlex/wago-hailo-example)'s Hailo-8 helmet detector drive three physical outputs live - the only app here reacting to an external system instead of a loopback or a TUI write. |
 
-`CoE` and `CPP` are the licence skill names as they appear in your
-`licences.json`'s `skills` array - check yours covers both (with a current
-expiry date) before starting App 2 or 3.
+`CoE`, `CPP`, and `MQTT` are the licence skill names as they appear in your
+`licences.json`'s `skills` array - check yours covers what you need (`CoE` +
+`CPP` for Apps 2/3, add `MQTT` for App 4, each with a current expiry date)
+before starting.
 
 > [!TIP]
 > First time here? Run App 1 first. It proves the container, licence, and
@@ -100,9 +121,10 @@ expiry date) before starting App 2 or 3.
 > required syntax for `xentara-ethercat-model-file-generator` (see
 > [Xentara's own docs](https://docs.xentara.io/xentara-ethercat-driver/ethercat_driver_model_file_generator.html#ethercat_driver_model_file_generator_identifier))
 > but isn't valid Xentara model JSON - opening it anywhere else fails with
-> "expected a JSON object" at that line, every time. Apps 2 and 3 (Step C,
-> below) always run the generator first; its output file, never the
-> template itself, is what you import, deploy, or open in Workbench.
+> "expected a JSON object" at that line, every time. Apps 2, 3, and 4
+> (Step C / Step K, below) always run the generator first; its output
+> file, never the template itself, is what you import, deploy, or open in
+> Workbench.
 
 ## Repo layout
 
@@ -112,15 +134,18 @@ model/
   template-minimal.json            # generator input only - see warning above (discover + edit I/O)
   template-rtt.json                # generator input only - see warning above (+ live cycle-time metrics, App 2)
   template-rtt-kbus.json           # generator input only - see warning above (+ verified hardware round trip, App 3)
+  template-mqtt-payload-control.json # generator input only - see warning above (AI-driven outputs, App 4, native only)
   example-rtt.json                 # template-rtt.json's real generator output, importable as-is (App 2)
   example-rtt-kbus.json            # template-rtt-kbus.json's real generator output, importable as-is (App 3)
   example-8di8do.json              # a complete, hand-written model for one WAGO 750-1506 (8DI/8DO) module
   example-blueprint.json           # minimal no-hardware model for the Blueprint control below
+  example-mqtt-payload-control.json # template-mqtt-payload-control.json's real generator output (App 4, native only)
   README.md
 control/
   ethercat-rtt-probe/               # C++ cycle-time probe (App 2)
   ethercat-kbus-rtt-probe/          # C++ cycle-time + hardware round-trip probe (App 3)
   blueprint-example/                # minimal reference control for the Blueprint section
+  mqtt-payload-control/             # C++ control: MQTT detection payload -> 3 physical DO outputs (App 4)
 schemas/
   sample-model.json                # Xentara's own demo model (App 1) - a real, directly-loadable model
   schema-xentara-*.json            # official JSON Schema files for validation
@@ -171,7 +196,9 @@ flowchart LR
 - **No hardware** -> [App 1](#app-1---xentara-demo-no-hardware).
 - **With hardware** -> [App 2](#app-2---wago-rtt-ethercat--cycle-time), then
   optionally [App 3](#app-3---wago-rtt--k-bus-verified-hardware-round-trip)
-  for a verified hardware round trip.
+  for a verified hardware round trip, or
+  [App 4](#app-4---mqtt-payload-control-ai-driven-outputs) to drive outputs
+  from a real external AI feed over MQTT instead.
 
 ---
 
@@ -531,7 +558,7 @@ void YourControl::step(xentara::RunContext &context) { /* runs once per schedule
 `initialize()` runs once at load; `step()` runs on every cycle the model's
 pipeline schedules it for (see step 4). Xentara enrolls **exactly one** C++
 control per running instance - see the
-[`multiple controls are enrolled`](#building-your-own-control-module-app-2--app-3)
+[`multiple controls are enrolled`](#building-your-own-control-module-app-2--app-3--app-4)
 troubleshooting entry if you hit that.
 
 ### 2. Project skeleton
@@ -590,7 +617,7 @@ the model tree:
 ```
 
 - `controlPath` is always the **bare filename** - no `control/` prefix (see
-  the [troubleshooting entry](#building-your-own-control-module-app-2--app-3)
+  the [troubleshooting entry](#building-your-own-control-module-app-2--app-3--app-4)
   if `step()` silently never runs).
 - The target on the right (`Registers.SomeOutput`, `Connection.SomeInput`)
   must already exist elsewhere in the model - typically a
@@ -738,6 +765,155 @@ available.
 
 ---
 
+## App 4 - MQTT Payload Control (AI-driven outputs)
+
+*WAGO example track, extended with a real external system.* Three physical
+digital outputs on the same WAGO coupler, driven live by helmet-detection
+results from [wago-hailo-example](https://github.com/WagoAlex/wago-hailo-example)
+- a Hailo-8 YOLOv5m pipeline - arriving over MQTT, instead of loopback
+wiring or a TUI write.
+
+This is the same general pattern as Apps 2 and 3: I/O comes in over a bus,
+gets aliased into flat `@DataPoint`s, a `@Skill.CPP.Control` turns external
+data into decisions, and everything is scheduled by pairing a `@Timer` with
+a `@Pipeline` in a `@Track` - with an MQTT feed standing in for physical
+inputs.
+
+> [!IMPORTANT]
+> **This app runs on the native Xentara install, not the `xentara-tryout`
+> Docker container the rest of this repo uses.** Its model needs
+> `xentara-mqtt-client >= 2.0+2.2` for the `asJSONText` payload property;
+> `xentara/xentara-tryout:latest` currently ships `2.0+2.1`, which rejects
+> the model outright (`unknown member "asJSONText"`). The native install
+> and the Docker container also both want exclusive use of the EtherCAT
+> NIC - only one can run at a time. The native install's layout this app
+> assumes: control and model under `~/.config/xentara/`, run as the
+> systemd unit `xentara@<user>.service`.
+
+### Step I - Run the inference source (external)
+
+Start an MQTT broker (e.g. Mosquitto) reachable from the device, then run
+[wago-hailo-example](https://github.com/WagoAlex/wago-hailo-example)
+pointed at it (see that repo's own Quick Start) so it's publishing to
+`inference/yolov5m-results` once per frame - a shape like:
+
+```json
+{
+  "timestamp": 1719600000000,
+  "fps": 28.4,
+  "detections": [
+    { "class": "white helmet", "confidence": 0.91, "box": [120.0, 45.0, 310.0, 280.0] }
+  ]
+}
+```
+
+Xentara only reads the `detections` array (see Step L) - it ignores
+`timestamp`, `fps`, `confidence`, and `box` entirely.
+
+> [!IMPORTANT]
+> wago-hailo-example's real class labels are `"blue helmet"`, `"head"`,
+> `"red helmet"`, `"white helmet"`, `"yellow helmet"` (from its own
+> `yolov5m-helmet.txt`) - a generic `"helmet"` class won't match anything
+> below. See
+> [`control/mqtt-payload-control/README.md`](control/mqtt-payload-control/README.md)
+> for exactly which three of those five labels this control acts on.
+
+### Step J - Build the control
+
+See [`control/mqtt-payload-control/README.md`](control/mqtt-payload-control/README.md)
+for the build command. Once you have `libMQTTPayloadControl.so`, copy it
+into the **native** instance's control directory (not a Docker container):
+
+```bash
+scp build-amd64/libMQTTPayloadControl.so \
+  <user>@<device-ip>:~/.config/xentara/control/MQTTPayloadControl.so
+```
+
+(Use the `build-arm64` output on ARM targets like the PFC300.)
+
+### Step K - Discover your I/O modules
+
+> [!WARNING]
+> Don't hand-load [`model/example-mqtt-payload-control.json`](model/example-mqtt-payload-control.json)
+> as-is on different hardware. It's this repo's own coupler's real,
+> discovered addresses - not a generic template. On a different physical
+> row (even a different terminal count on the *same* coupler type), those
+> addresses point at the wrong process-data offsets. This bit us during
+> development: a hand-written version of this model had its digital output
+> addresses shifted by an analog module that got added to the row later -
+> the write succeeded and read back correctly, but landed on the analog
+> module's word instead of the real output. Always discover fresh.
+
+Same procedure as [App 2's Step C](#step-c---discover-your-io-modules),
+against [`model/template-mqtt-payload-control.json`](model/template-mqtt-payload-control.json):
+
+```bash
+docker run --rm --network host --privileged \
+  --cap-add NET_RAW --cap-add NET_ADMIN --cap-add SYS_NICE \
+  --entrypoint bash \
+  -v ~/model:/out -w /out \
+  xentara/xentara-tryout:latest -lc \
+  'xentara-ethercat-model-file-generator \
+     -i template-mqtt-payload-control.json -o model.json \
+     -b <your-nic> -m online -n "EtherCAT Terminal" -v'
+```
+
+Both the native install and any Docker container want exclusive use of the
+EtherCAT NIC - stop whichever one is currently running before this scan.
+As with Step C, set the generated bus to **free run** synchronization if
+the generator doesn't already carry it over (see
+[`model/README.md`](model/README.md)).
+
+### Step L - Load the model
+
+Edit the generated `model.json`'s `@Skill.MQTT.Client.brokerAddress` to
+your own broker (this repo's committed copy points at its own test
+device), then copy it to the native instance and restart:
+
+```bash
+scp model.json <user>@<device-ip>:~/.config/xentara/model.json
+ssh <user>@<device-ip> 'sudo systemctl restart xentara@<user>.service'
+```
+
+Check `journalctl -u xentara@<user>.service` for `Using model file …` and
+no errors.
+
+### Step M - Watch it react
+
+```bash
+xentara-debugger
+```
+
+(run directly on the device - no container to attach to). Read
+`Registers.MQTT-Payload` to see the raw detection JSON arrive live, and
+`Connection.DO1-White` / `DO2-Blue` / `DO3-Head` to see them flip as
+matching classes appear in frame. `Track MQTT Reconnect` retries the
+broker connection every 5s, independently of the 1ms EtherCAT track - the
+same two-tracks-at-different-speeds pattern App 2's cycle-time track uses,
+just applied to a slower, non-real-time concern.
+
+> [!TIP]
+> No hardware feed handy? Publish a test message by hand and watch the
+> outputs react:
+> ```bash
+> mosquitto_pub -h <broker> -t inference/yolov5m-results \
+>   -m '{"detections":[{"class":"white helmet"}]}'
+> ```
+
+### Confirmed on real hardware
+
+Confirmed end to end against a live camera feed on real WAGO 750-354
+hardware: genuine `"white helmet"` and `"head"` detections correctly set
+`Connection.DO1-White` / `DO3-Head` to `true` (with `DO2-Blue` correctly
+staying `false` with no blue helmet in frame), tracked live frame-to-frame,
+and the physical outputs were visually confirmed switching. See
+[`control/mqtt-payload-control/README.md`](control/mqtt-payload-control/README.md#validated)
+for the two real bugs this surfaced (stale EtherCAT addresses, and the
+Docker-image/native-install `mqtt-client` version skew) and how they were
+fixed.
+
+---
+
 ## Troubleshooting
 
 ### Deployment and licensing (all apps)
@@ -757,12 +933,23 @@ available.
 | Discovery: "can't open interface" | Another Xentara instance owns the NIC - stop it first. |
 | Discovery: "connected devices less than configured" | Coupler state machine out of sync; run `xentara-ethercat-device-info --interface <your-nic>` once, then retry. |
 
-### Building your own control module (App 2 / App 3)
+### Building your own control module (App 2 / App 3 / App 4)
 
 | Symptom | Fix |
 |---|---|
 | A control's `step()` never runs, no error | `controlPath` had a `control/` prefix - use the bare filename. |
 | `multiple controls are enrolled` | One C++ control per instance; remove the extra `@Skill.CPP.Control`. |
+
+### MQTT / AI-driven outputs (App 4)
+
+| Symptom | Fix |
+|---|---|
+| `FATAL ERROR: ... unknown member "asJSONText" for data point element` | You're loading this model into `xentara-tryout` (Docker). It needs `xentara-mqtt-client >= 2.0+2.2`; the Docker image ships `2.0+2.1`. Run it on the native install instead - see the [App 4 warning](#app-4---mqtt-payload-control-ai-driven-outputs). |
+| `Registers.MQTT-Payload` stays `""` | Broker unreachable, or wago-hailo-example isn't publishing yet - confirm with `mosquitto_sub -h <broker> -t inference/yolov5m-results -v` first, outside Xentara entirely. |
+| `Connection.DO*` reads `true`/`false` but nothing physically switches | Stale EtherCAT addresses - the model wasn't (re)discovered against the *current* physical row. Regenerate it: [Step K](#step-k---discover-your-io-modules). `xentara-ethercat-device-info` reporting `Invalid sync manager configuration` is a symptom of the same thing. |
+| Payload updates but no `Connection.DO*` ever flips | The `detections` text needs the literal substrings `"head"`, `"white helmet"`, or `"blue helmet"` - a generic `"helmet"` class won't match anything; see [Step I](#step-i---run-the-inference-source-external). |
+| MQTT connects, then drops repeatedly | Check `Track MQTT Reconnect`'s 5s retry isn't fighting a broker that's also restarting; confirm `brokerAddress` and port in the model match your actual broker, not this repo's own test device. |
+| Native install and `xentara-tryout` both show bus errors / bad quality | Only one can own the EtherCAT NIC at a time - stop the other one first (`systemctl stop xentara@<user>.service` or `docker stop xentara-tryout`). |
 
 ## Validated
 
@@ -836,11 +1023,12 @@ flowchart TB
         FA("Reuse the .so + model.json<br/>e.g. model/example-rtt.json<br/>docker cp both files in as above → Restart<br/>skip Steps A - D entirely")
     end
 
-    App2Build --> App2Done{"Add verified hardware<br/>round trip?"}
+    App2Build --> App2Done{"Add hardware round trip,<br/>or AI-driven outputs?"}
     FastPath --> App2Done
 
     App2Done -- "No" --> Done("Done - App 2 running")
-    App2Done -- "Yes, wire loopback" --> App3Prep
+    App2Done -- "Verified round trip,<br/>wire loopback" --> App3Prep
+    App2Done -- "AI-driven outputs,<br/>via MQTT" --> App4Prep
 
     App3Prep("Redo Steps A - E with<br/>model/template-rtt-kbus.json and<br/>control/ethercat-kbus-rtt-probe/")
 
@@ -853,6 +1041,20 @@ flowchart TB
     end
 
     App3Prep --> CF
+
+    App4Prep("Run an MQTT broker +<br/>wago-hailo-example,<br/>publishing to inference/yolov5m-results<br/>Stop Docker or native, whichever owns the NIC")
+
+    subgraph App4["App 4 - MQTT Payload Control (native install only)"]
+        direction TB
+        DI("Step I: confirm the feed<br/>mosquitto_sub -t inference/yolov5m-results -v<br/>detections array arriving")
+        DJ("Step J: build the control<br/>build → libMQTTPayloadControl.so<br/>scp to ~/.config/xentara/control/MQTTPayloadControl.so")
+        DK("Step K: discover I/O<br/>xentara-ethercat-model-file-generator<br/>-i template-mqtt-payload-control.json -o model.json")
+        DL("Step L: load the model<br/>edit brokerAddress, scp model.json<br/>→ ~/.config/xentara/model.json<br/>systemctl restart xentara@user.service")
+        DM("Step M: watch it react<br/>xentara-debugger, read Registers.MQTT-Payload<br/>and Connection.DO1-White / DO2-Blue / DO3-Head")
+        DI --> DJ --> DK --> DL --> DM
+    end
+
+    App4Prep --> DI
 ```
 
 | Node | Jump to |
@@ -870,6 +1072,11 @@ flowchart TB
 | Step F | [Wire the loopback](#step-f---wire-the-loopback) |
 | Step G | [Bind the wired channels](#step-g---bind-the-wired-channels) |
 | Step H | [Watch the round trip in the TUI](#step-h---watch-the-round-trip-in-the-tui) |
+| Step I | [Run the inference source](#step-i---run-the-inference-source-external) |
+| Step J | [Build the control](#step-j---build-the-control) |
+| Step K | [Discover your I/O modules](#step-k---discover-your-io-modules) |
+| Step L | [Load the model](#step-l---load-the-model) |
+| Step M | [Watch it react](#step-m---watch-it-react) |
 
 - **Steps 0-2** are one-time per device; App 1 needs nothing past Step 2.
 - **Steps A-D** only need re-running when the physical terminal row changes
@@ -884,6 +1091,13 @@ flowchart TB
   [`model/template-rtt-kbus.json`](model/template-rtt-kbus.json) and
   [`control/ethercat-kbus-rtt-probe/`](control/ethercat-kbus-rtt-probe/)
   for the RTT-only template and probe, before Steps F-H.
+- **App 4** shares the same coupler as App 2 but runs on the **native**
+  Xentara install, not `xentara-tryout` - its own
+  [`model/template-mqtt-payload-control.json`](model/template-mqtt-payload-control.json)
+  and
+  [`control/mqtt-payload-control/`](control/mqtt-payload-control/), plus
+  an external MQTT/AI feed instead of loopback wiring. See the
+  [App 4 warning](#app-4---mqtt-payload-control-ai-driven-outputs) for why.
 
 ## References
 
