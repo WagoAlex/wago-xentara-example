@@ -1,0 +1,58 @@
+# One Dockerfile for all four wago-xentara-example apps.
+# The build context is a per-app staging dir holding exactly what goes into
+# ~/.config/xentara: model.json and (apps 2-4) control/<Name>.so.
+#
+#   docker build -f docker/Dockerfile.xentara-example \
+#     -t wagoalex/xentara-example-appN-...:<date> <stagingdir>
+#
+# See README.md ("Building the images") for the staging commands per app.
+#
+# The licence is deliberately NOT baked in - it is node-specific. Mount it:
+#   -v /home/edge/.local/share/xentara/licence:/usr/local/share/xentara/licence:ro
+FROM xentara/xentara-tryout:latest
+
+USER root
+# The 2026-07-24 upstream image ships /usr/bin/run-xentara.sh with CRLF line
+# endings, so the default CMD dies with "no such file or directory". Strip them
+# here so these images run with the stock CMD.
+# The same CRLF problem breaks /usr/local/bin/xentara-tui (a PHP script whose
+# shebang becomes "#!/usr/bin/env php\r"), so fix both.
+RUN sed -i 's/\r$//' /usr/bin/run-xentara.sh /usr/local/bin/xentara-tui
+
+# Reported upstream - see ../docs/upstream-xentara-tui-bug.md. Delete this RUN
+# once the fix ships; the `grep -q` guard fails the build if the sed stops
+# matching, so a silent regression is not possible.
+# xentara-tui's drawLine() pads a *selected* row to $w-2 visible characters
+# starting at $col+1, so it ends on $col+$w-1 - exactly where drawBox() drew the
+# right border - and overwrites it with a highlighted space. Unselected rows pad
+# to $w-3 and leave the border alone, so the box edge appears to jump as you
+# move the cursor. Pad the selected row like the others.
+RUN sed -i 's/\$pad  = str_repeat(. ., max(0, \$w - 2 - \$visLen));/$pad  = str_repeat(" ", max(0, $w - 3 - $visLen));/' \
+      /usr/local/bin/xentara-tui \
+    && grep -q 'max(0, $w - 3 - $visLen)' /usr/local/bin/xentara-tui
+
+# Portainer's container console runs /bin/bash. Drop straight into the TUI for
+# interactive shells so "Console -> Connect" is a live inspector, not a prompt.
+# Non-interactive `docker exec ... bash -c "..."` is unaffected ($- has no "i").
+#
+# The three lines before `exec` exist because Portainer writes its own shell
+# init ("export LANG=C.UTF-8", "alias ls=...", ...) to stdin *after* bash
+# starts. Without them that text is echoed onto the screen - where it stays,
+# because the TUI's full redraw uses cursor-home, not clear-screen - and is
+# also delivered to the TUI as keystrokes, each one triggering a redraw
+# (the "wiggle"). So: silence echo, drain whatever arrives in the first 600 ms,
+# clear the screen, then hand over.
+RUN printf '%s\n' \
+      'case $- in' \
+      '  *i*)' \
+      '    stty -echo 2>/dev/null' \
+      '    read -t 0.6 -N 100000 -r _ 2>/dev/null' \
+      '    printf "\033[2J\033[3J\033[H"' \
+      '    exec xentara-tui --host "${XENTARA_TUI_HOST:-localhost}" --port "${XENTARA_TUI_PORT:-8080}" --user "${XENTARA_TUI_USER:-xentara}" ${XENTARA_TUI_PASSWORD:+--pass "$XENTARA_TUI_PASSWORD"}' \
+      '    ;;' \
+      'esac' \
+    >> /home/xentara/.bashrc
+
+COPY --chown=xentara:xentara . /home/xentara/.config/xentara/
+
+USER xentara

@@ -9,6 +9,8 @@
 | Licence error in logs | Activate the node ID at customerportal.xentara.io, then restart. |
 | TUI 401 after setting the password | Restart the container - the password is read only at startup. |
 | TUI SSL error on 8080 | Try port **8006** instead. |
+| TUI in Portainer's console shows leftover `export LANG=…` lines, redraws by itself, or jumps into an element on its own | Portainer writes its shell init to stdin *after* bash starts; those bytes are echoed and also read as keystrokes. Fixed in the app images (`docker/Dockerfile.xentara-example` drains stdin before `exec`) - rebuild or re-pull if you are on an older image. |
+| Box border of the model tree appears doubled or shifts as you move the cursor | Upstream `xentara-tui` draws a selected row one character too wide, overwriting the right border. Patched in `docker/Dockerfile.xentara-example`. |
 | Config/model/licence gone after redeploy | No persistent volume - back up before recreating, or add bind mounts. |
 | Jittery cycle time | Real-time thread preempted - fix `XENTARA_AFFINITY`, isolate the core, use an RT kernel. |
 
@@ -18,6 +20,7 @@
 |---|---|
 | Discovery: "can't open interface" | Another Xentara instance owns the NIC - stop it first. |
 | Discovery: "connected devices less than configured" | Coupler state machine out of sync; run `xentara-ethercat-device-info --interface <your-nic>` once, then retry. |
+| **Every EtherCAT entry shows quality `Bad`**, values frozen, but the model loaded and no error in the logs | A second Xentara instance is on the same NIC. It starts cleanly and logs nothing - only the entry quality gives it away. `docker ps \| grep xentara` and `systemctl is-active 'xentara@*'`, stop all but one, restart the survivor. Confirm with `docker exec -i <container> xentara-debugger` and `read "EtherCAT Terminal.<device>.<entry>"`, which prints the quality per data point. |
 
 ## Building your own control module (App 2 / App 3 / App 4)
 

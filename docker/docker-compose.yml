@@ -1,0 +1,104 @@
+# Xentara tryout runtime, one service per app, everything bind-mounted from a
+# clone of this repo. Nothing is baked into an image - swap apps by swapping
+# which profile you bring up.
+#
+#   docker compose -f ~/Downloads/wago-xentara-example/docker/docker-compose.yml \
+#     --profile app4 up -d
+#
+# Defaults assume Xentara's own conventions and a clone in Downloads:
+#   REPO     ${HOME}/Downloads/wago-xentara-example   this clone
+#   LICENCE  ${HOME}/.local/share/xentara/licence     Xentara's default licence dir
+# Override either as an environment variable if your paths differ, e.g. the
+# native install on a WAGO edge device keeps its licence in
+# /home/edge/.local/share/xentara/licence.
+#
+# In Portainer (Stacks -> Add stack -> Web editor) set REPO, LICENCE and
+# COMPOSE_PROFILES in the stack's environment-variables section - HOME is not
+# set there, so the defaults above will not resolve.
+#
+# All four services share container_name xentara-tryout on purpose: only one
+# can run at a time anyway, because the EtherCAT master needs exclusive use of
+# the NIC (and that includes the native xentara@edge.service - stop it first:
+# systemctl stop xentara@edge.service).
+#
+# PREREQUISITES
+#   * The control .so files are build output and are gitignored, so a fresh
+#     clone does NOT contain them. Build them first in the xentara/xentara-build
+#     devcontainer (see each control/*/README.md); apps 2, 3 and 4 will not
+#     start without them:
+#       app2  control/ethercat-rtt-probe/build-amd64/libEtherCATRttProbe.so
+#       app3  control/ethercat-kbus-rtt-probe/build-amd64/libEtherCATKbusRttProbe.so
+#       app4  control/mqtt-payload-control/build-amd64/libMQTTPayloadControl.so
+#     (Point the mounts at build-arm64/ instead on an ARM device such as a PFC300.)
+#   * The licence is node-specific and is NOT in this repo. LICENCE must point
+#     at a directory containing licences.json valid for this machine's node ID.
+#   * mkdir -p /var/log/xentara on the host.
+
+x-xentara-common: &xentara-common
+  image: xentara/xentara-tryout:latest
+  container_name: xentara-tryout
+  restart: unless-stopped
+  network_mode: host
+  privileged: true
+  cap_add:
+    - SYS_NICE      # real-time scheduling priority for the EtherCAT thread
+    - NET_ADMIN     # bring the interface up, set promiscuous mode
+    - NET_RAW       # send/receive raw EtherCAT (Layer-2) frames
+  ulimits:
+    rtprio: 99
+    rttime: -1
+  security_opt:
+    - no-new-privileges:false
+  environment:
+    - XENTARA_TRACK=realtime
+    # Pin the real-time thread to a core that EXISTS on your CPU (check `nproc`).
+    - XENTARA_AFFINITY=3
+  # The 2026-07-24 image ships /usr/bin/run-xentara.sh with CRLF line endings,
+  # so its default CMD dies with "no such file or directory" and bash cannot
+  # parse it either. Run the binary directly - restart: unless-stopped does
+  # what the script's retry loop did. Revert to the script once upstream fixes it.
+  command: ["xentara"]
+
+services:
+
+  # App 1 - Xentara demo, six synthetic waveforms. No hardware, no control.
+  app1:
+    <<: *xentara-common
+    profiles: ["app1"]
+    volumes:
+      - ${REPO:-${HOME}/Downloads/wago-xentara-example}/schemas/sample-model.json:/home/xentara/.config/xentara/model.json:ro
+      - ${LICENCE:-${HOME}/.local/share/xentara/licence}:/usr/local/share/xentara/licence:ro
+      - /var/log/xentara:/var/log/xentara
+
+  # App 2 - WAGO RTT over EtherCAT.
+  app2:
+    <<: *xentara-common
+    profiles: ["app2"]
+    volumes:
+      - ${REPO:-${HOME}/Downloads/wago-xentara-example}/model/example-rtt.json:/home/xentara/.config/xentara/model.json:ro
+      - ${REPO:-${HOME}/Downloads/wago-xentara-example}/control/ethercat-rtt-probe/build-amd64/libEtherCATRttProbe.so:/home/xentara/.config/xentara/control/EtherCATRttProbe.so:ro
+      - ${LICENCE:-${HOME}/.local/share/xentara/licence}:/usr/local/share/xentara/licence:ro
+      - /var/log/xentara:/var/log/xentara
+
+  # App 3 - App 2 plus the K-Bus round trip. Needs the DO->DI and AO->AI
+  # loopback wires described in model/README.md.
+  app3:
+    <<: *xentara-common
+    profiles: ["app3"]
+    volumes:
+      - ${REPO:-${HOME}/Downloads/wago-xentara-example}/model/example-rtt-kbus.json:/home/xentara/.config/xentara/model.json:ro
+      - ${REPO:-${HOME}/Downloads/wago-xentara-example}/control/ethercat-kbus-rtt-probe/build-amd64/libEtherCATKbusRttProbe.so:/home/xentara/.config/xentara/control/EtherCATKbusRttProbe.so:ro
+      - ${LICENCE:-${HOME}/.local/share/xentara/licence}:/usr/local/share/xentara/licence:ro
+      - /var/log/xentara:/var/log/xentara
+
+  # App 4 - three DOs driven by an AI detection feed over MQTT. Needs a broker
+  # and wago-hailo-example publishing to inference/yolov5m-results. The broker
+  # address is baked into the model (192.168.2.124) - edit it there if yours differs.
+  app4:
+    <<: *xentara-common
+    profiles: ["app4"]
+    volumes:
+      - ${REPO:-${HOME}/Downloads/wago-xentara-example}/model/example-mqtt-payload-control.json:/home/xentara/.config/xentara/model.json:ro
+      - ${REPO:-${HOME}/Downloads/wago-xentara-example}/control/mqtt-payload-control/build-amd64/libMQTTPayloadControl.so:/home/xentara/.config/xentara/control/MQTTPayloadControl.so:ro
+      - ${LICENCE:-${HOME}/.local/share/xentara/licence}:/usr/local/share/xentara/licence:ro
+      - /var/log/xentara:/var/log/xentara

@@ -1,0 +1,57 @@
+# App 2 - WAGO RTT over EtherCAT
+#
+# Paste into Portainer: Stacks -> Add stack -> Web editor -> Deploy.
+# Model and control library are baked into the image; only the licence is mounted.
+#
+# TUI: open the container's Console (command /bin/bash) - it drops straight into
+# xentara-tui and asks for the password. Set XENTARA_TUI_PASSWORD below to skip
+# the prompt. Set the password itself once with:
+#   docker exec -it -u xentara -e HOME=/home/xentara xentara-app2 \
+#     xentara-password xentara
+# (it persists in the named volume; restart the container afterwards so
+# Xentara re-reads passwords.json. Running it as root fails - root has no
+# users.json.)
+
+services:
+  xentara:
+    image: wagoalex/xentara-example-app2-rtt:latest
+    container_name: xentara-app2
+    restart: unless-stopped
+    network_mode: host
+    privileged: true
+    cap_add: [SYS_NICE, NET_ADMIN, NET_RAW]
+    ulimits:
+      rtprio: 99
+      rttime: -1
+    security_opt: ["no-new-privileges:false"]
+    stdin_open: true
+    tty: true
+    environment:
+      - XENTARA_TRACK=realtime
+      - XENTARA_AFFINITY=3
+      # Single source of truth for this app's HTTP/WebSocket port: the command
+      # below stamps it into config.json in the volume before Xentara starts.
+      # Apps 1-4 use 8081-8084 so several stacks can run side by side.
+      - XENTARA_TUI_PORT=8082
+      # Weak on purpose for demos - set it in the volume with
+      #   xentara-password --dont-reject-insecure-passwords xentara
+      - XENTARA_TUI_PASSWORD=xentara
+    command:
+      - /bin/bash
+      - -c
+      - 'sed -i "s/\"port\":[[:space:]]*[0-9]*/\"port\": $${XENTARA_TUI_PORT:-8080}/"
+         /home/xentara/.config/xentara/config.json; exec /usr/bin/run-xentara.sh'
+    volumes:
+      # Seeded from the image on first start: model.json, control/, config.json,
+      # users.json, passwords.json. Password changes survive recreation here.
+      # docker compose down -v resets it to whatever the image ships.
+      - xentara-app2-config:/home/xentara/.config/xentara
+      # Node-specific licence. Adjust if yours lives elsewhere.
+      - /home/edge/.local/share/xentara/licence:/usr/local/share/xentara/licence:ro
+      - /var/log/xentara:/var/log/xentara
+
+volumes:
+  xentara-app2-config:
+    # Pinned so the volume name does not get the stack-name prefix Portainer
+    # would otherwise add - keeps the commands above valid either way.
+    name: xentara-app2-config

@@ -13,6 +13,8 @@ guide. Each app has its own page under [`docs/`](docs/).
 - [Two tracks, one shared setup](#two-tracks-one-shared-setup)
 - [Choose your app](#choose-your-app)
 - [Repo layout](#repo-layout)
+- [Ways to deploy (pick exactly one)](#ways-to-deploy-pick-exactly-one)
+  - [How the app images are built](#how-the-app-images-are-built)
 - [Deployment workflow overview](#deployment-workflow-overview)
 - [Shared setup (every app starts here)](#shared-setup-every-app-starts-here)
   - [Step 0 - Clone this repo](#step-0---clone-this-repo)
@@ -111,6 +113,11 @@ before starting.
 ```
 docker-compose.yml                 # the runtime stack (paste into Portainer)
 README.md                          # this hub: setup + choose-your-app
+docker/
+  README.md                        # all three deploy paths in detail + how the images are built
+  docker-compose.yml               # path B: bind-mount an app from this clone (one profile per app)
+  portainer-app1.yml … app4.yml    # path C: prebuilt image per app, ports 8081-8084
+  Dockerfile.xentara-example       # builds those images (one file, all four apps)
 docs/
   app-demo.md                      # App 1 - Xentara demo (no hardware)
   app-rtt.md                       # App 2 - WAGO RTT (EtherCAT + cycle time)
@@ -141,6 +148,80 @@ schemas/
 scripts/
   rtt_websocket_test.py            # minimal WebSocket client, reads the RTT registers live
 ```
+
+---
+
+## Ways to deploy (pick exactly one)
+
+Three paths, and they are alternatives - each one supplies the runtime, the
+model, and the control library by a different mechanism. Running two at once on
+the same device fails: they compete for the same port and, for Apps 2-4, the
+same EtherCAT NIC. Between them they cover every case; there is no fourth way.
+
+| | **A - Runtime only** | **B - Bind-mount from this clone** | **C - Prebuilt image per app** |
+|---|---|---|---|
+| File | [`docker-compose.yml`](docker-compose.yml) | [`docker/docker-compose.yml`](docker/docker-compose.yml) | [`docker/portainer-app1.yml`](docker/portainer-app1.yml) … `app4.yml` |
+| Image | `xentara/xentara-tryout` | `xentara/xentara-tryout` | `wagoalex/xentara-example-appN-*` |
+| Where the model comes from | none yet - you import one | bind-mounted from the clone, read-only | baked into the image, seeded into a named volume |
+| Where the control `.so` comes from | none | bind-mounted from `control/*/build-amd64/` | baked in |
+| Needs a clone on the device | no | **yes** | no |
+| Needs the C++ controls built | no | **yes**, Apps 2-4 | no |
+| Port | 8080 (image default) | 8080 (image default) | 8081-8084, one per app |
+| Edit loop | n/a | edit `model/*.json`, restart | rebuild the image, or `down -v` |
+| Use it when | licensing a fresh device, before you care about an app | developing: changing models or controls | demoing or running a fixed app on a device you don't develop on |
+
+**Path A** is [Step 1](#step-1---download--deploy-the-runtime-browser) of the
+shared setup - everyone does it once, to get a licensed runtime. Then choose B
+or C.
+
+**Path B** is what every app guide under [`docs/`](docs/) walks through: one
+Compose profile per app, `--profile app1` … `app4`, all sharing one
+`container_name` on purpose so only one can run.
+
+**Path C** is paste-and-go: four self-contained stacks for Portainer's web
+editor, each with its own container name, volume, and preassigned port, so
+App 1 (no hardware) can run alongside one of Apps 2-4. Its `command:` stamps
+`XENTARA_TUI_PORT` into `config.json` before Xentara starts, which is what keeps
+the server port and the TUI port from drifting apart. Portainer's **Console ->
+Connect** opens the live TUI directly instead of a shell.
+
+Full detail, including the password and volume-reset gotchas, is in
+[`docker/README.md`](docker/README.md).
+
+### How the app images are built
+
+Path C's four images come from **one** Dockerfile,
+[`docker/Dockerfile.xentara-example`](docker/Dockerfile.xentara-example). It
+contains nothing app-specific - the app *is* the build context:
+
+```dockerfile
+FROM xentara/xentara-tryout:latest
+USER root
+RUN sed -i 's/\r$//' /usr/bin/run-xentara.sh /usr/local/bin/xentara-tui
+RUN printf '%s\n' 'case $- in' '  *i*) exec xentara-tui … ;;' 'esac' \
+    >> /home/xentara/.bashrc
+COPY --chown=xentara:xentara . /home/xentara/.config/xentara/
+USER xentara
+```
+
+Four decisions, each covering a distinct concern:
+
+| Concern | Decision |
+|---|---|
+| Base runtime | upstream's `xentara/xentara-tryout`, untouched apart from one `sed` that strips CRLF line endings from `run-xentara.sh` and `xentara-tui` - both are broken in the 2026-07-24 build (crash-loop and a `#!/usr/bin/env php\r` shebang). |
+| App identity | `COPY . → ~/.config/xentara/` from a per-app staging dir holding `model.json` and, for Apps 2-4, `control/<Name>.so`. One Dockerfile, four images, no per-app branching. |
+| Console behaviour | an appended `.bashrc` case that matches only interactive shells (`$-` contains `i`), so Portainer's console opens the TUI while `docker exec … bash -c` stays a plain shell. |
+| Startup | **no `ENTRYPOINT`** - just the inherited `CMD ["/usr/bin/run-xentara.sh"]`, upstream's `while true; do xentara; sleep 5; done`. That loop is why a fatal config error looks like a container that is "Up" while repeating `FATAL ERROR`. |
+
+Two things are deliberately **not** in the images, for opposite reasons:
+
+- **The licence** is tied to the node ID, so baking it in produces an image
+  that works on exactly one machine. It is bind-mounted read-only instead.
+- **The port** would pin one image to one deployment. It is stamped into
+  `config.json` at container start from `XENTARA_TUI_PORT` instead.
+
+Staging and build commands for all four apps are in
+[`docker/README.md`](docker/README.md#building-the-images).
 
 ---
 
@@ -207,8 +288,9 @@ Everything referenced below is a relative path from here.
 
 ### Step 1 - Download + deploy the runtime (browser)
 
-The runtime ships as a container image (`xentara/xentara-tryout`). Deploy it
-with Portainer:
+This is **path A** in [Ways to deploy](#ways-to-deploy-pick-exactly-one): a
+licensed runtime with no app in it yet. The runtime ships as a container image
+(`xentara/xentara-tryout`). Deploy it with Portainer:
 
 1. Open Portainer on the device (`https://<device-ip>:9443/`).
 2. **Stacks -> Add stack -> Web editor**, name it `xentara`.
@@ -256,7 +338,9 @@ use that guide directly if anything here doesn't match your version.
    password on first run via `xentara-password`, prompted in the console;
    restart after.)
 
-Now pick your app below.
+Now pick your app below. The guides follow **path B**; if you would rather run
+a fixed app from a prebuilt image, use **path C** instead - see
+[Ways to deploy](#ways-to-deploy-pick-exactly-one).
 
 ---
 
