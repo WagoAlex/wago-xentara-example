@@ -15,3 +15,7 @@ model.json
 
 # Personal/local reference docs, not part of the published repo
 docs/app-switch-cheatsheet.md
+
+# node-specific licence and local tooling state
+licence/
+.serena/
