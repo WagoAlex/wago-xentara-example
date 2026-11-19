@@ -59,7 +59,7 @@ docker run --rm --network host --privileged \
   --cap-add NET_RAW --cap-add NET_ADMIN --cap-add SYS_NICE \
   --entrypoint bash \
   -v ~/model:/out -w /out \
-  xentara/xentara-tryout:latest -lc \
+  wagoalex/xentara-base:2026-11-13 -lc \
   'xentara-ethercat-model-file-generator \
      -i template-rtt.json -o model.json \
      -b <your-nic> -m online -n "EtherCAT Terminal" -v'

@@ -35,7 +35,7 @@
 #   * mkdir -p /var/log/xentara on the host.
 
 x-xentara-common: &xentara-common
-  image: xentara/xentara-tryout:latest
+  image: wagoalex/xentara-base:2026-11-13
   container_name: xentara-tryout
   restart: unless-stopped
   network_mode: host

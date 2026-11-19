@@ -8,12 +8,10 @@ digital outputs from it directly. Validated end to end on real hardware -
 see [Validated](#validated) below.
 
 > [!IMPORTANT]
-> **Runs on the native Xentara install, not `xentara-tryout` (Docker).** The
-> model's `asJSONText` payload property requires `xentara-mqtt-client >=
-> 2.0+2.2`. As of this writing, the `xentara/xentara-tryout:latest` image
-> ships `2.0+2.1`, which doesn't have it - the model fails to load in that
-> container at all. Every other app in this repo uses the Docker container;
-> this one is the exception. See the
+> **Needs `xentara-mqtt-client >= 2.0+2.2`.** The model's `asJSONText` payload
+> property requires it. The old `xentara/xentara-tryout:latest` image shipped
+> `2.0+2.1` and failed to load the model. The App 4 Docker image and
+> `wagoalex/xentara-base` ship `2.0+2.2`, and a native install works too. See the
 > [App 4 guide](../../docs/app-mqtt-payload-control.md)
 > for the full walkthrough, including why.
 
@@ -64,8 +62,8 @@ arm64 one on ARM targets (e.g. a WAGO PFC300).
 
 ## Deploy (native install)
 
-Unlike the other controls in this repo, this one goes into the **native**
-Xentara instance's directories, not a Docker container's:
+For a native install, this control goes into the Xentara instance's
+directories. The App 4 Docker image already contains it:
 
 1. Copy the module in, named exactly `MQTTPayloadControl.so`:
    ```bash
@@ -111,4 +109,4 @@ Getting this working surfaced two real bugs, both now fixed in this repo:
    can never drift silently again.
 2. **Docker image / native install version skew**, as described in the
    warning above - `asJSONText` needs `xentara-mqtt-client 2.0+2.2`, which
-   only the native install had.
+   the plain `xentara-tryout` image did not have.

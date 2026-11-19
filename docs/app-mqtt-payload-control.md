@@ -15,15 +15,16 @@ a `@Pipeline` in a `@Track` - with an MQTT feed standing in for physical
 inputs.
 
 > [!IMPORTANT]
-> **This app runs on the native Xentara install, not the `xentara-tryout`
-> Docker container the rest of this repo uses.** Its model needs
-> `xentara-mqtt-client >= 2.0+2.2` for the `asJSONText` payload property;
-> `xentara/xentara-tryout:latest` currently ships `2.0+2.1`, which rejects
-> the model outright (`unknown member "asJSONText"`). The native install
-> and the Docker container also both want exclusive use of the EtherCAT
-> NIC - only one can run at a time. The native install's layout this app
-> assumes: control and model under `~/.config/xentara/`, run as the
-> systemd unit `xentara@<user>.service`.
+> **This app needs `xentara-mqtt-client >= 2.0+2.2`.** The model uses the
+> `asJSONText` payload property. An older client rejects the model
+> (`unknown member "asJSONText"`). The App 4 Docker image
+> (`wagoalex/xentara-example-app4-mqtt-payload-control`, stack
+> [`portainer-app4.yml`](../docker/portainer-app4.yml)) and
+> `wagoalex/xentara-base` include `2.0+2.2`. This app also runs on a native
+> install with the same client version. Steps J to L below show the native
+> layout: control and model under `~/.config/xentara/`, run as the systemd
+> unit `xentara@<user>.service`. Only one runtime, Docker or native, can use
+> the EtherCAT NIC at a time.
 
 ## Step I - Run the inference source (external)
 
@@ -59,7 +60,7 @@ Xentara only reads the `detections` array (see Step L) - it ignores
 
 See [`control/mqtt-payload-control/README.md`](../control/mqtt-payload-control/README.md)
 for the build command. Once you have `libMQTTPayloadControl.so`, copy it
-into the **native** instance's control directory (not a Docker container):
+into the native instance's control directory. The App 4 Docker image already contains it:
 
 ```bash
 scp build-amd64/libMQTTPayloadControl.so \
@@ -89,14 +90,14 @@ docker run --rm --network host --privileged \
   --cap-add NET_RAW --cap-add NET_ADMIN --cap-add SYS_NICE \
   --entrypoint bash \
   -v ~/model:/out -w /out \
-  xentara/xentara-tryout:latest -lc \
+  wagoalex/xentara-base:2026-11-13 -lc \
   'xentara-ethercat-model-file-generator \
      -i template-mqtt-payload-control.json -o model.json \
      -b <your-nic> -m online -n "EtherCAT Terminal" -v'
 ```
 
-Both the native install and any Docker container want exclusive use of the
-EtherCAT NIC - stop whichever one is currently running before this scan.
+Only one runtime, Docker or native, can use the EtherCAT NIC. Stop the
+other one before this scan.
 As with Step C, set the generated bus to **free run** synchronization if
 the generator doesn't already carry it over (see
 [`model/README.md`](../model/README.md)).

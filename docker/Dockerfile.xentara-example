@@ -9,7 +9,7 @@
 #
 # The licence is deliberately NOT baked in - it is node-specific. Mount it:
 #   -v /home/edge/.local/share/xentara/licence:/usr/local/share/xentara/licence:ro
-FROM xentara/xentara-tryout:latest
+FROM wagoalex/xentara-base:2026-11-13
 
 USER root
 # The 2026-07-24 upstream image ships /usr/bin/run-xentara.sh with CRLF line

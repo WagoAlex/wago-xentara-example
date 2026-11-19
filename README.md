@@ -42,12 +42,11 @@ That is the whole requirement for the Xentara track (App 1).
 - **App 3** also: two loopback wires (a spare DO->DI and a spare AO->AI).
 - **App 4** also: an MQTT broker (e.g. Mosquitto) and a running
   [wago-hailo-example](https://github.com/WagoAlex/wago-hailo-example)
-  publishing to `inference/yolov5m-results`, plus a **native Xentara
-  install** (not the `xentara-tryout` Docker container Apps 1-3 use) with
-  `xentara-mqtt-client >= 2.0+2.2` (check via
-  `dpkg -l | grep xentara-mqtt-client`). The native install and any Docker
-  container both want exclusive use of the EtherCAT NIC, so only one of
-  "Apps 1-3" or "App 4" can run at a time.
+  publishing to `inference/yolov5m-results`, plus a Xentara runtime with
+  `xentara-mqtt-client >= 2.0+2.2`. The App 4 Docker image and
+  `wagoalex/xentara-base` include it. For a native install, check with
+  `dpkg -l | grep xentara-mqtt-client`. Only one Xentara runtime, Docker or
+  native, can use the EtherCAT NIC at a time.
 
 ## Two tracks, one shared setup
 
@@ -82,7 +81,7 @@ licence skills. The linked guide carries the full walkthrough.
 | **App 1** - [Xentara demo](docs/app-demo.md) | *(none)* | [`sample-model.json`](schemas/sample-model.json) | None | Base | Runtime + TUI smoke test: six synthetic waveforms in a live inspector. **Start here.** |
 | **App 2** - [WAGO RTT](docs/app-rtt.md) | [`ethercat-rtt-probe/`](control/ethercat-rtt-probe/) | [`template-rtt.json`](model/template-rtt.json) | EtherCAT coupler | `CoE` + `CPP` | Your real I/O discovered and editable in the TUI, plus a live cycle-time readout. |
 | **App 3** - [WAGO RTT + K-Bus](docs/app-rtt-kbus.md) | [`ethercat-kbus-rtt-probe/`](control/ethercat-kbus-rtt-probe/) | [`template-rtt-kbus.json`](model/template-rtt-kbus.json) | Coupler + 2 loopback wires | `CoE` + `CPP` | App 2 plus a verified, timed hardware round trip (digital + analog). |
-| **App 4** - [MQTT Payload Control](docs/app-mqtt-payload-control.md) | [`mqtt-payload-control/`](control/mqtt-payload-control/) | [`template-mqtt-payload-control.json`](model/template-mqtt-payload-control.json) | Coupler + MQTT feed, native install | `CoE` + `CPP` + `MQTT` | Three physical outputs driven live by an AI detection feed over MQTT. |
+| **App 4** - [MQTT Payload Control](docs/app-mqtt-payload-control.md) | [`mqtt-payload-control/`](control/mqtt-payload-control/) | [`template-mqtt-payload-control.json`](model/template-mqtt-payload-control.json) | Coupler + MQTT feed | `CoE` + `CPP` + `MQTT` | Three physical outputs driven live by an AI detection feed over MQTT. |
 | **Blueprint** - [build your own](docs/blueprint.md) | [`blueprint-example/`](control/blueprint-example/) | [`example-blueprint.json`](model/example-blueprint.json) | None | Base | A minimal no-hardware control plus a recipe for writing your own. |
 
 `CoE`, `CPP`, and `MQTT` are the licence skill names as they appear in your
@@ -130,12 +129,12 @@ model/
   template-minimal.json            # generator input only - see warning above (discover + edit I/O)
   template-rtt.json                # generator input only - see warning above (+ live cycle-time metrics, App 2)
   template-rtt-kbus.json           # generator input only - see warning above (+ verified hardware round trip, App 3)
-  template-mqtt-payload-control.json # generator input only - see warning above (AI-driven outputs, App 4, native only)
+  template-mqtt-payload-control.json # generator input only - see warning above (AI-driven outputs, App 4)
   example-rtt.json                 # template-rtt.json's real generator output, importable as-is (App 2)
   example-rtt-kbus.json            # template-rtt-kbus.json's real generator output, importable as-is (App 3)
   example-8di8do.json              # reference model, not tied to an app: one WAGO 750-1506 (8DI/8DO) module, hand-written
   example-blueprint.json           # minimal no-hardware model for the Blueprint control
-  example-mqtt-payload-control.json # template-mqtt-payload-control.json's real generator output (App 4, native only)
+  example-mqtt-payload-control.json # template-mqtt-payload-control.json's real generator output (App 4)
   README.md
 control/
   ethercat-rtt-probe/               # C++ cycle-time probe (App 2)
@@ -161,7 +160,7 @@ same EtherCAT NIC. Between them they cover every case; there is no fourth way.
 | | **A - Runtime only** | **B - Bind-mount from this clone** | **C - Prebuilt image per app** |
 |---|---|---|---|
 | File | [`docker-compose.yml`](docker-compose.yml) | [`docker/docker-compose.yml`](docker/docker-compose.yml) | [`docker/portainer-app1.yml`](docker/portainer-app1.yml) … `app4.yml` |
-| Image | `xentara/xentara-tryout` | `xentara/xentara-tryout` | `wagoalex/xentara-example-appN-*` |
+| Image | `wagoalex/xentara-base` | `wagoalex/xentara-base` | `wagoalex/xentara-example-appN-*` |
 | Where the model comes from | none yet - you import one | bind-mounted from the clone, read-only | baked into the image, seeded into a named volume |
 | Where the control `.so` comes from | none | bind-mounted from `control/*/build-amd64/` | baked in |
 | Needs a clone on the device | no | **yes** | no |
@@ -195,7 +194,7 @@ Path C's four images come from **one** Dockerfile,
 contains nothing app-specific - the app *is* the build context:
 
 ```dockerfile
-FROM xentara/xentara-tryout:latest
+FROM wagoalex/xentara-base:2026-11-13
 USER root
 RUN sed -i 's/\r$//' /usr/bin/run-xentara.sh /usr/local/bin/xentara-tui
 RUN printf '%s\n' 'case $- in' '  *i*) exec xentara-tui … ;;' 'esac' \
@@ -208,7 +207,7 @@ Four decisions, each covering a distinct concern:
 
 | Concern | Decision |
 |---|---|
-| Base runtime | upstream's `xentara/xentara-tryout`, untouched apart from one `sed` that strips CRLF line endings from `run-xentara.sh` and `xentara-tui` - both are broken in the 2026-07-24 build (crash-loop and a `#!/usr/bin/env php\r` shebang). |
+| Base runtime | `wagoalex/xentara-base:2026-11-13`, a copy of upstream's `xentara/xentara-tryout`. Upstream removed that image from Docker Hub. One `sed` still strips CRLF line endings from `run-xentara.sh` and `xentara-tui`. Both are broken in the 2026-07-24 build (crash-loop and a `#!/usr/bin/env php\r` shebang). |
 | App identity | `COPY . → ~/.config/xentara/` from a per-app staging dir holding `model.json` and, for Apps 2-4, `control/<Name>.so`. One Dockerfile, four images, no per-app branching. |
 | Console behaviour | an appended `.bashrc` case that matches only interactive shells (`$-` contains `i`), so Portainer's console opens the TUI while `docker exec … bash -c` stays a plain shell. |
 | Startup | **no `ENTRYPOINT`** - just the inherited `CMD ["/usr/bin/run-xentara.sh"]`, upstream's `while true; do xentara; sleep 5; done`. That loop is why a fatal config error looks like a container that is "Up" while repeating `FATAL ERROR`. |
@@ -290,7 +289,7 @@ Everything referenced below is a relative path from here.
 
 This is **path A** in [Ways to deploy](#ways-to-deploy-pick-exactly-one): a
 licensed runtime with no app in it yet. The runtime ships as a container image
-(`xentara/xentara-tryout`). Deploy it with Portainer:
+(`wagoalex/xentara-base:2026-11-13`). Deploy it with Portainer:
 
 1. Open Portainer on the device (`https://<device-ip>:9443/`).
 2. **Stacks -> Add stack -> Web editor**, name it `xentara`.
@@ -353,7 +352,7 @@ Setup done? Open your guide:
 | [App 1 - Xentara demo](docs/app-demo.md) | No hardware. Prove the runtime, licence, and TUI work. Start here. |
 | [App 2 - WAGO RTT](docs/app-rtt.md) | Real I/O on a WAGO coupler + a live cycle-time readout. |
 | [App 3 - WAGO RTT + K-Bus](docs/app-rtt-kbus.md) | App 2 plus a verified, wired, timed hardware round trip. |
-| [App 4 - MQTT Payload Control](docs/app-mqtt-payload-control.md) | Physical outputs driven live by an AI detection feed over MQTT (native install). |
+| [App 4 - MQTT Payload Control](docs/app-mqtt-payload-control.md) | Physical outputs driven live by an AI detection feed over MQTT. |
 | [Blueprint](docs/blueprint.md) | Write your own C++ and EtherCAT control from scratch. |
 | [Deployment workflow (detailed reference)](docs/workflow-reference.md) | Every step from both tracks in one diagram, with a jump table. |
 | [Troubleshooting](docs/troubleshooting.md) | Symptom -> fix, grouped by app. |

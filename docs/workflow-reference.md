@@ -82,9 +82,9 @@ flowchart TB
 
     App3Prep --> CF
 
-    App4Prep("Run an MQTT broker +<br/>wago-hailo-example,<br/>publishing to inference/yolov5m-results<br/>Stop Docker or native, whichever owns the NIC")
+    App4Prep("Run an MQTT broker +<br/>wago-hailo-example,<br/>publishing to inference/yolov5m-results<br/>Stop the other runtime that owns the NIC")
 
-    subgraph App4["App 4 - MQTT Payload Control (native install only)"]
+    subgraph App4["App 4 - MQTT Payload Control"]
         direction TB
         DI("Step I: confirm the feed<br/>mosquitto_sub -t inference/yolov5m-results -v<br/>detections array arriving")
         DJ("Step J: build the control<br/>build → libMQTTPayloadControl.so<br/>scp to ~/.config/xentara/control/MQTTPayloadControl.so")
@@ -131,8 +131,8 @@ flowchart TB
   [`model/template-rtt-kbus.json`](../model/template-rtt-kbus.json) and
   [`control/ethercat-kbus-rtt-probe/`](../control/ethercat-kbus-rtt-probe/)
   for the RTT-only template and probe, before Steps F-H.
-- **App 4** shares the same coupler as App 2 but runs on the **native**
-  Xentara install, not `xentara-tryout` - its own
+- **App 4** shares the same coupler as App 2 but needs
+  `xentara-mqtt-client >= 2.0+2.2` (App 4 image or native install) - its own
   [`model/template-mqtt-payload-control.json`](../model/template-mqtt-payload-control.json)
   and
   [`control/mqtt-payload-control/`](../control/mqtt-payload-control/), plus

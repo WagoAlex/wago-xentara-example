@@ -1,7 +1,7 @@
 # `docker/` - run any app straight from this clone
 
 [`docker-compose.yml`](docker-compose.yml) runs the official
-`xentara/xentara-tryout:latest` image and bind-mounts everything an app needs
+`wagoalex/xentara-base:2026-11-13` image and bind-mounts everything an app needs
 from this repo: the model, its control `.so`, the licence directory and the log
 directory. Nothing is copied into the container and no image is built, so
 editing `model/*.json` here and restarting is the whole edit loop.
@@ -163,7 +163,7 @@ One Dockerfile builds all four images. Nothing app-specific is written in it:
 the app *is* the build context.
 
 ```dockerfile
-FROM xentara/xentara-tryout:latest
+FROM wagoalex/xentara-base:2026-11-13
 
 USER root
 RUN sed -i 's/\r$//' /usr/bin/run-xentara.sh /usr/local/bin/xentara-tui
